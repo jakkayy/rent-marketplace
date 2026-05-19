@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum RentalStatus {
+  PENDING
+  CONFIRMED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  avatar    String?
+  role      UserRole @default(BUYER)
+  lineId    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop      Shop?
+  rentals   Rental[]
+  favorites Favorite[]
+  reviews   Review[]
+}
+
+model Shop {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  logo        String?
+  banner      String?
+  address     String?
+  phone       String?
+  lineId      String?
+  qrCodeUrl   String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId String @unique
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  products Product[]
+  rentals  Rental[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  products Product[]
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  images      String[]
+  pricePerDay Decimal @db.Decimal(10, 2)
+  deposit     Decimal? @db.Decimal(10, 2)
+  condition   String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  shopId     String
+  shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  rentals      Rental[]
+  availability Availability[]
+  reviews      Review[]
+  favorites    Favorite[]
+
+  @@index([shopId])
+  @@index([categoryId])
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  isBooked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, date])
+  @@index([productId, date])
+}
+
+model Rental {
+  id          String       @id @default(cuid())
+  startDate   DateTime     @db.Date
+  endDate     DateTime     @db.Date
+  totalDays   Int
+  totalPrice  Decimal      @db.Decimal(10, 2)
+  status      RentalStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  renterId  String
+  renter    User   @relation(fields: [renterId], references: [id])
+  shopId    String
+  shop      Shop   @relation(fields: [shopId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([renterId])
+  @@index([shopId])
+  @@index([productId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      @db.SmallInt
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorId  String
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([authorId, productId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
