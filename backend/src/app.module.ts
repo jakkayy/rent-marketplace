@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { ShopsModule } from './shops/shops.module';
 import { ProductsModule } from './products/products.module';
 import { RentalsModule } from './rentals/rentals.module';
+import { CategoriesModule } from './categories/categories.module';
+import { UploadModule } from './upload/upload.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -18,6 +20,8 @@ import { AppService } from './app.service';
     ShopsModule,
     ProductsModule,
     RentalsModule,
+    CategoriesModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

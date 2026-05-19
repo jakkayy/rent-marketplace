@@ -46,12 +46,15 @@ export class ProductsService {
     });
   }
 
-  async findAll(query?: { categoryId?: string; shopId?: string }) {
+  async findAll(query?: { categoryId?: string; shopId?: string; search?: string }) {
     return this.prisma.product.findMany({
       where: {
         isActive: true,
         ...(query?.categoryId && { categoryId: query.categoryId }),
         ...(query?.shopId && { shopId: query.shopId }),
+        ...(query?.search && {
+          name: { contains: query.search, mode: 'insensitive' as any },
+        }),
       },
       include: {
         category: true,
