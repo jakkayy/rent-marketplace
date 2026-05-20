@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, ShopStatus, ProductStatus, RentalStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
-import { ShopStatus, ProductStatus } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -12,7 +12,8 @@ export class AdminService {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = status ? { status } : {};
+    const where: Prisma.ShopWhereInput = {};
+    if (status) where.status = status as ShopStatus;
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.shop.findMany({
@@ -31,11 +32,7 @@ export class AdminService {
   async updateShopStatus(shopId: string, status: ShopStatus) {
     const shop = await this.prisma.shop.findUnique({ where: { id: shopId } });
     if (!shop) throw new NotFoundException('Shop not found');
-
-    return this.prisma.shop.update({
-      where: { id: shopId },
-      data: { status },
-    });
+    return this.prisma.shop.update({ where: { id: shopId }, data: { status } });
   }
 
   // ─── Users ───────────────────────────────────────────────────────────────
@@ -63,7 +60,6 @@ export class AdminService {
   async toggleUserActive(userId: string, isActive: boolean) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
-
     const { password, ...result } = await this.prisma.user.update({
       where: { id: userId },
       data: { isActive },
@@ -77,7 +73,8 @@ export class AdminService {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = status ? { status } : {};
+    const where: Prisma.ProductWhereInput = {};
+    if (status) where.status = status as ProductStatus;
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.product.findMany({
@@ -99,11 +96,7 @@ export class AdminService {
   async updateProductStatus(productId: string, status: ProductStatus) {
     const product = await this.prisma.product.findUnique({ where: { id: productId } });
     if (!product) throw new NotFoundException('Product not found');
-
-    return this.prisma.product.update({
-      where: { id: productId },
-      data: { status },
-    });
+    return this.prisma.product.update({ where: { id: productId }, data: { status } });
   }
 
   // ─── Rentals ─────────────────────────────────────────────────────────────
@@ -112,7 +105,8 @@ export class AdminService {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = status ? { status } : {};
+    const where: Prisma.RentalWhereInput = {};
+    if (status) where.status = status as RentalStatus;
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.rental.findMany({

@@ -3,7 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { ProductStatus } from '@prisma/client';
+import { Prisma, ProductStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -66,24 +66,20 @@ export class ProductsService {
     const { page = 1, limit = 20, sort, priceMin, priceMax, ...filters } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = {
-      status: ProductStatus.AVAILABLE,
-      ...(filters.categoryId && { categoryId: filters.categoryId }),
-      ...(filters.shopId && { shopId: filters.shopId }),
-      ...(filters.brand && { brand: filters.brand }),
-      ...(filters.size && { size: filters.size }),
-      ...(filters.color && { color: filters.color }),
-      ...(filters.occasion && { occasion: filters.occasion }),
-      ...(filters.search && {
-        name: { contains: filters.search, mode: 'insensitive' },
-      }),
-      ...((priceMin !== undefined || priceMax !== undefined) && {
-        pricePerDay: {
-          ...(priceMin !== undefined && { gte: priceMin }),
-          ...(priceMax !== undefined && { lte: priceMax }),
-        },
-      }),
-    };
+    const where: Prisma.ProductWhereInput = { status: ProductStatus.AVAILABLE };
+    if (filters.categoryId) where.categoryId = filters.categoryId;
+    if (filters.shopId) where.shopId = filters.shopId;
+    if (filters.brand) where.brand = filters.brand;
+    if (filters.size) where.size = filters.size;
+    if (filters.color) where.color = filters.color;
+    if (filters.occasion) where.occasion = filters.occasion;
+    if (filters.search) where.name = { contains: filters.search, mode: Prisma.QueryMode.insensitive };
+    if (priceMin !== undefined || priceMax !== undefined) {
+      where.pricePerDay = {
+        ...(priceMin !== undefined && { gte: priceMin }),
+        ...(priceMax !== undefined && { lte: priceMax }),
+      };
+    }
 
     const orderBy = this.resolveSort(sort);
 

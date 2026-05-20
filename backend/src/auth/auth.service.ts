@@ -73,11 +73,11 @@ export class AuthService {
     });
 
     const plainToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = await bcrypt.hash(plainToken, 10);
+    const tokenHash = crypto.createHash('sha256').update(plainToken).digest('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     await this.prisma.passwordResetToken.create({
-      data: { token: hashedToken, userId: user.id, expiresAt },
+      data: { token: tokenHash, userId: user.id, expiresAt },
     });
 
     // In production: send plainToken via email. For now, return it directly.
@@ -88,29 +88,23 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const recentTokens = await this.prisma.passwordResetToken.findMany({
-      where: { used: false, expiresAt: { gt: new Date() } },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
+    const tokenHash = crypto.createHash('sha256').update(dto.token).digest('hex');
+
+    const record = await this.prisma.passwordResetToken.findUnique({
+      where: { token: tokenHash },
     });
 
-    let matched: (typeof recentTokens)[number] | null = null;
-    for (const record of recentTokens) {
-      if (await bcrypt.compare(dto.token, record.token)) {
-        matched = record;
-        break;
-      }
+    if (!record || record.used || record.expiresAt < new Date()) {
+      throw new BadRequestException('Invalid or expired reset token');
     }
 
-    if (!matched) throw new BadRequestException('Invalid or expired reset token');
-
     await this.prisma.passwordResetToken.update({
-      where: { id: matched.id },
+      where: { id: record.id },
       data: { used: true },
     });
 
     const hashed = await bcrypt.hash(dto.password, 12);
-    await this.usersService.update(matched.userId, { password: hashed });
+    await this.usersService.update(record.userId, { password: hashed });
 
     return { message: 'Password reset successfully' };
   }
