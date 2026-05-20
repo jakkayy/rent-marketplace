@@ -61,6 +61,10 @@ export const api = {
         body: JSON.stringify(body),
       }),
     logout: () => fetcher<void>("/auth/logout", { method: "POST" }),
+    forgotPassword: (body: object) =>
+      fetcher<{ message: string }>("/auth/forgot-password", { method: "POST", body: JSON.stringify(body) }),
+    resetPassword: (body: object) =>
+      fetcher<{ message: string }>("/auth/reset-password", { method: "POST", body: JSON.stringify(body) }),
   },
 
   categories: {

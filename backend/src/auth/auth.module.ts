@@ -7,12 +7,14 @@ import { UsersModule } from '../users/users.module';
 import { DatabaseModule } from '../database/database.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { MailModule } from '../common/mail/mail.module';
 
 @Module({
   imports: [
     UsersModule,
     ConfigModule,
     DatabaseModule,
+    MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

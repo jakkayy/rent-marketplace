@@ -11,6 +11,7 @@ import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../database/prisma.service';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { MailService } from '../common/mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -25,6 +26,7 @@ export class AuthService {
     private configService: ConfigService,
     private prisma: PrismaService,
     private tokenBlacklist: TokenBlacklistService,
+    private mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -55,8 +57,8 @@ export class AuthService {
     return { user: result, accessToken: await this.generateToken(user) };
   }
 
-  logout(jti: string, exp: number) {
-    this.tokenBlacklist.revoke(jti, exp * 1000);
+  async logout(jti: string, exp: number) {
+    await this.tokenBlacklist.revoke(jti, exp * 1000);
     return { message: 'Logged out successfully' };
   }
 
@@ -80,11 +82,7 @@ export class AuthService {
       data: { token: tokenHash, userId: user.id, expiresAt },
     });
 
-    // TODO: send plainToken via email (e.g. SendGrid, Resend)
-    // For local dev: token is logged below — remove before production
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[DEV] Password reset token for ${user.email}: ${plainToken}`);
-    }
+    await this.mailService.sendPasswordReset(user.email, plainToken);
 
     return { message: 'If that email exists, a reset link has been sent' };
   }

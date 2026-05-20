@@ -11,6 +11,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../database/prisma.service';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { MailService } from '../common/mail/mail.service';
 jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('$2b$12$hashed'),
   compare: jest.fn(),
@@ -56,7 +57,8 @@ describe('AuthService', () => {
 
   const mockJwtService = { signAsync: jest.fn().mockResolvedValue('mock-token') };
   const mockConfigService = { get: jest.fn().mockReturnValue('test-secret') };
-  const mockTokenBlacklist = { revoke: jest.fn(), isRevoked: jest.fn().mockReturnValue(false) };
+  const mockTokenBlacklist = { revoke: jest.fn().mockResolvedValue(undefined), isRevoked: jest.fn().mockResolvedValue(false) };
+  const mockMailService = { sendPasswordReset: jest.fn().mockResolvedValue(undefined) };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -68,6 +70,7 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
         { provide: TokenBlacklistService, useValue: mockTokenBlacklist },
+        { provide: MailService, useValue: mockMailService },
       ],
     }).compile();
 
@@ -135,8 +138,8 @@ describe('AuthService', () => {
   // ─── logout ───────────────────────────────────────────────────────────────
 
   describe('logout', () => {
-    it('should revoke token and return success message', () => {
-      const result = service.logout('jti-123', Math.floor(Date.now() / 1000) + 3600);
+    it('should revoke token and return success message', async () => {
+      const result = await service.logout('jti-123', Math.floor(Date.now() / 1000) + 3600);
       expect(tokenBlacklist.revoke).toHaveBeenCalledWith('jti-123', expect.any(Number));
       expect(result.message).toBe('Logged out successfully');
     });
