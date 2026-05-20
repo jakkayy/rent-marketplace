@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { LogOut, Store, User, ShoppingBag } from "lucide-react";
+import { LogOut, Store, ShoppingBag } from "lucide-react";
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -16,6 +16,13 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-3">
+          <Link href="/shops">
+            <Button variant="ghost" size="sm">
+              <Store className="h-4 w-4 mr-1" />
+              ร้านค้า
+            </Button>
+          </Link>
+
           {user ? (
             <>
               <span className="text-sm text-muted-foreground hidden sm:inline">

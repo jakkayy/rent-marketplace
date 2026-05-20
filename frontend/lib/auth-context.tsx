@@ -41,6 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    // Call backend to blacklist the JWT (fire-and-forget)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"}/auth/logout`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    }).catch(() => {});
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken(null);

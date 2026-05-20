@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import type { Product, Category } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -10,46 +11,49 @@ import { Button } from "@/components/ui/button";
 import { Search, MapPin, Tag } from "lucide-react";
 
 export default function HomePage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    api.categories.list().then(setCategories).catch(console.error);
-    loadProducts();
-  }, []);
-
-  async function loadProducts() {
+  const loadProducts = useCallback(async (categoryId: string, q: string) => {
     setLoading(true);
+    setError("");
     try {
       const res = await api.products.list({
-        ...(selectedCategory && { categoryId: selectedCategory }),
-        ...(search && { q: search }),
+        ...(categoryId && { categoryId }),
+        ...(q && { q }),
       });
       setProducts(res.data);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      setError("โหลดสินค้าไม่สำเร็จ กรุณาลองใหม่");
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    api.categories.list().then(setCategories).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadProducts(selectedCategory, search);
+  }, [selectedCategory]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    loadProducts();
+    loadProducts(selectedCategory, search);
   }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      {/* Hero */}
       <div className="mb-8 rounded-2xl bg-primary p-8 text-primary-foreground">
         <h1 className="mb-2 text-3xl font-bold">RentMarket</h1>
         <p className="text-lg opacity-90">เช่าสินค้าได้ง่าย ๆ ไม่ต้องซื้อใหม่</p>
       </div>
 
-      {/* Search */}
       <form onSubmit={handleSearch} className="mb-6 flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -63,12 +67,11 @@ export default function HomePage() {
         <Button type="submit">ค้นหา</Button>
       </form>
 
-      {/* Categories */}
       <div className="mb-6 flex flex-wrap gap-2">
         <Button
           variant={selectedCategory === "" ? "default" : "outline"}
           size="sm"
-          onClick={() => { setSelectedCategory(""); loadProducts(); }}
+          onClick={() => setSelectedCategory("")}
         >
           <Tag className="mr-1 h-3 w-3" />
           ทั้งหมด
@@ -78,14 +81,17 @@ export default function HomePage() {
             key={cat.id}
             variant={selectedCategory === cat.id ? "default" : "outline"}
             size="sm"
-            onClick={() => { setSelectedCategory(cat.id); loadProducts(); }}
+            onClick={() => setSelectedCategory(cat.id)}
           >
             {cat.name}
           </Button>
         ))}
       </div>
 
-      {/* Products Grid */}
+      {error && (
+        <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+      )}
+
       {loading ? (
         <div className="py-20 text-center text-muted-foreground">กำลังโหลด...</div>
       ) : products.length === 0 ? (
@@ -103,7 +109,7 @@ export default function HomePage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-muted-foreground">
+                    <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
                       ไม่มีรูป
                     </div>
                   )}
