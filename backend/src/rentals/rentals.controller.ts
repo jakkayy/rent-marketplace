@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { RentalsService } from './rentals.service';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { UpdateRentalStatusDto } from './dto/update-rental-status.dto';
@@ -17,14 +17,28 @@ export class RentalsController {
 
   @Get('my')
   @UseGuards(JwtAuthGuard)
-  async findMyRentals(@CurrentUser() user: { userId: string }) {
-    return this.rentalsService.findMyRentals(user.userId);
+  async findMyRentals(
+    @CurrentUser() user: { userId: string },
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.rentalsService.findMyRentals(user.userId, {
+      page: page ? Number(page) : 1,
+      limit: limit ? Math.min(Number(limit), 100) : 20,
+    });
   }
 
   @Get('shop')
   @UseGuards(JwtAuthGuard)
-  async findShopRentals(@CurrentUser() user: { userId: string }) {
-    return this.rentalsService.findShopRentals(user.userId);
+  async findShopRentals(
+    @CurrentUser() user: { userId: string },
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.rentalsService.findShopRentals(user.userId, {
+      page: page ? Number(page) : 1,
+      limit: limit ? Math.min(Number(limit), 100) : 20,
+    });
   }
 
   @Patch(':id/status')

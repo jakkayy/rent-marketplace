@@ -64,29 +64,51 @@ export class RentalsService {
     });
   }
 
-  async findMyRentals(renterId: string) {
-    return this.prisma.rental.findMany({
-      where: { renterId },
-      include: {
-        product: { select: { id: true, name: true, images: true } },
-        shop: { select: { id: true, name: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async findMyRentals(renterId: string, query: { page?: number; limit?: number } = {}) {
+    const { page = 1, limit = 20 } = query;
+    const skip = (page - 1) * limit;
+
+    const where = { renterId };
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.rental.findMany({
+        where,
+        include: {
+          product: { select: { id: true, name: true, images: true } },
+          shop: { select: { id: true, name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.rental.count({ where }),
+    ]);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async findShopRentals(userId: string) {
+  async findShopRentals(userId: string, query: { page?: number; limit?: number } = {}) {
+    const { page = 1, limit = 20 } = query;
+    const skip = (page - 1) * limit;
+
     const shop = await this.prisma.shop.findUnique({ where: { ownerId: userId } });
     if (!shop) throw new ForbiddenException('You do not have a shop');
 
-    return this.prisma.rental.findMany({
-      where: { shopId: shop.id },
-      include: {
-        product: { select: { id: true, name: true, images: true } },
-        renter: { select: { id: true, firstName: true, lastName: true, phone: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const where = { shopId: shop.id };
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.rental.findMany({
+        where,
+        include: {
+          product: { select: { id: true, name: true, images: true } },
+          renter: { select: { id: true, firstName: true, lastName: true, phone: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.rental.count({ where }),
+    ]);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async updateStatus(userId: string, rentalId: string, dto: UpdateRentalStatusDto) {

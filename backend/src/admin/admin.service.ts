@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Prisma, ShopStatus, ProductStatus, RentalStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 
@@ -12,6 +12,9 @@ export class AdminService {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
+    if (status && !Object.values(ShopStatus).includes(status as ShopStatus)) {
+      throw new BadRequestException(`Invalid shop status: ${status}`);
+    }
     const where: Prisma.ShopWhereInput = {};
     if (status) where.status = status as ShopStatus;
 
@@ -73,6 +76,9 @@ export class AdminService {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
+    if (status && !Object.values(ProductStatus).includes(status as ProductStatus)) {
+      throw new BadRequestException(`Invalid product status: ${status}`);
+    }
     const where: Prisma.ProductWhereInput = {};
     if (status) where.status = status as ProductStatus;
 
@@ -105,6 +111,9 @@ export class AdminService {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
+    if (status && !Object.values(RentalStatus).includes(status as RentalStatus)) {
+      throw new BadRequestException(`Invalid rental status: ${status}`);
+    }
     const where: Prisma.RentalWhereInput = {};
     if (status) where.status = status as RentalStatus;
 

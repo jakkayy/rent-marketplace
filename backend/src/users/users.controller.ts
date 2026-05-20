@@ -7,11 +7,13 @@ import {
   Param,
   Body,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('users')
 export class UsersController {
@@ -60,7 +62,13 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(@Param('id') id: string) {
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() requester: { userId: string; role: UserRole },
+  ) {
+    if (requester.userId !== id && requester.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Access denied');
+    }
     const user = await this.usersService.findByIdOrThrow(id);
     const { password, ...result } = user;
     return result;
