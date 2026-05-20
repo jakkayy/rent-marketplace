@@ -38,7 +38,7 @@ export function Navbar() {
                 <Link href="/shop">
                   <Button variant="ghost" size="sm">
                     <Store className="h-4 w-4 mr-1" />
-                    ร้านค้า
+                    จัดการร้าน
                   </Button>
                 </Link>
               )}
