@@ -31,8 +31,23 @@ async function upload(file: File): Promise<string> {
   return data.url;
 }
 
+async function uploadMultiple(files: File[]): Promise<string[]> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const form = new FormData();
+  files.forEach((f) => form.append("files", f));
+  const res = await fetch(`${API_BASE}/upload/multiple`, {
+    method: "POST",
+    headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+    body: form,
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.message || "Upload failed");
+  return (data as { url: string }[]).map((d) => d.url);
+}
+
 export const api = {
   upload,
+  uploadMultiple,
 
   auth: {
     register: (body: object) =>

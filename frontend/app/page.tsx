@@ -10,17 +10,17 @@ import { Input } from "@/components/ui/input";
 import { MapPin, Check, ArrowRight, Search } from "lucide-react";
 
 const OCCASIONS = [
-  { label: "ทั้งหมด", value: "" },
-  { label: "งานหมั้น", value: "engagement" },
-  { label: "งานแต่ง", value: "wedding" },
-  { label: "ค็อกเทล", value: "cocktail" },
-  { label: "ราตรี", value: "evening" },
-  { label: "กาล่า", value: "gala" },
-  { label: "ปาร์ตี้", value: "party" },
-  { label: "ทำงาน", value: "work" },
-  { label: "ลำลอง", value: "casual" },
-  { label: "กล้อง", value: "photography" },
-  { label: "กีฬา", value: "sports" },
+  { label: "ทั้งหมด",  value: "",            emoji: "✨" },
+  { label: "งานหมั้น", value: "engagement",   emoji: "💍" },
+  { label: "งานแต่ง",  value: "wedding",      emoji: "👰" },
+  { label: "ค็อกเทล",  value: "cocktail",     emoji: "🥂" },
+  { label: "ราตรี",    value: "evening",      emoji: "🌙" },
+  { label: "กาล่า",    value: "gala",         emoji: "🌟" },
+  { label: "ปาร์ตี้",  value: "party",        emoji: "🎉" },
+  { label: "ทำงาน",    value: "work",         emoji: "💼" },
+  { label: "ลำลอง",    value: "casual",       emoji: "👗" },
+  { label: "กล้อง",    value: "photography",  emoji: "📷" },
+  { label: "กีฬา",     value: "sports",       emoji: "⚽" },
 ];
 
 const FEATURES = [
@@ -68,35 +68,45 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="border-b bg-white px-6 py-16 sm:py-24">
-        <div className="mx-auto max-w-6xl">
+      <section className="relative overflow-hidden px-6 py-20 sm:py-28"
+        style={{ background: "linear-gradient(135deg, #0a5c58 0%, #0d7a74 40%, #1a9e97 100%)" }}
+      >
+        {/* Decorative blobs */}
+        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #ffffff 0%, transparent 70%)" }} />
+        <div className="pointer-events-none absolute -bottom-16 left-1/3 h-64 w-64 rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #ffffff 0%, transparent 70%)" }} />
+
+        <div className="relative mx-auto max-w-6xl">
           <div className="max-w-2xl">
-            <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
+            <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
               เช่าสินค้าจาก<br />
-              <span className="text-primary">ร้านที่ไว้ใจได้</span>
+              <span className="text-white/80">ร้านที่ไว้ใจได้</span>
             </h1>
-            <p className="mb-8 text-lg text-muted-foreground">
+            <p className="mb-8 text-lg text-white/70">
               แคตตาล็อกสินค้าเช่าจากร้านในไทย ติดต่อร้านผ่าน LINE โดยตรง
             </p>
 
-            <div className="mb-8 flex flex-wrap gap-3">
+            <div className="mb-10 flex flex-wrap gap-3">
               <Link href="#products">
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="gap-2 bg-white text-primary hover:bg-white/90">
                   เริ่มเลือกสินค้า
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/shops">
-                <Button size="lg" variant="outline">
+                <Button size="lg" variant="outline"
+                  className="border-white/40 text-white hover:bg-white/10 hover:text-white"
+                >
                   ดูร้านเช่าทั้งหมด
                 </Button>
               </Link>
             </div>
 
-            <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-5 text-sm text-white/70">
               {FEATURES.map((f) => (
                 <span key={f} className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-primary" />
+                  <Check className="h-4 w-4 text-white/90" />
                   {f}
                 </span>
               ))}
@@ -137,7 +147,7 @@ export default function HomePage() {
                     : "border-border bg-white text-muted-foreground hover:border-primary hover:text-primary"
                 }`}
               >
-                {o.label}
+                <span className="mr-1">{o.emoji}</span>{o.label}
               </button>
             ))}
           </div>

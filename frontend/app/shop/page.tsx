@@ -433,12 +433,14 @@ function ProductForm({
   }, []);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
     setUploading(true);
     try {
-      const url = await api.upload(file);
-      setImages((prev) => [...prev, url]);
+      const urls = files.length === 1
+        ? [await api.upload(files[0])]
+        : await api.uploadMultiple(files);
+      setImages((prev) => [...prev, ...urls]);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "อัปโหลดไม่สำเร็จ");
     } finally {
@@ -499,14 +501,15 @@ function ProductForm({
                 </button>
               </div>
             ))}
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed text-muted-foreground hover:border-primary hover:text-primary"
+              className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground hover:border-primary hover:text-primary"
             >
               {uploading ? <Clock className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
+              {!uploading && <span className="text-[10px]">เพิ่มรูป</span>}
             </button>
           </div>
         </div>
