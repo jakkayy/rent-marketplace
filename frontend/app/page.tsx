@@ -95,8 +95,8 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/shops">
-                <Button size="lg" variant="outline"
-                  className="border-white/40 text-white hover:bg-white/10 hover:text-white"
+                <Button size="lg" 
+                  className="gap-2 bg-white text-primary hover:bg-white/90"
                 >
                   ดูร้านเช่าทั้งหมด
                 </Button>
