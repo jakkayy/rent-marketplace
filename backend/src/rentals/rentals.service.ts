@@ -85,10 +85,23 @@ export class RentalsService {
     });
     if (!rental) throw new NotFoundException('Rental not found');
 
+    this.validateStatusTransition(rental.status, dto.status);
+
     return this.prisma.rental.update({
       where: { id: rentalId },
       data: { status: dto.status },
     });
+  }
+
+  private validateStatusTransition(from: RentalStatus, to: RentalStatus) {
+    const allowed: Partial<Record<RentalStatus, RentalStatus[]>> = {
+      [RentalStatus.PENDING]: [RentalStatus.CONFIRMED, RentalStatus.REJECTED],
+      [RentalStatus.CONFIRMED]: [RentalStatus.ACTIVE],
+      [RentalStatus.ACTIVE]: [RentalStatus.COMPLETED],
+    };
+    if (!allowed[from]?.includes(to)) {
+      throw new BadRequestException(`Cannot transition rental from ${from} to ${to}`);
+    }
   }
 
   async cancelRental(userId: string, rentalId: string) {
