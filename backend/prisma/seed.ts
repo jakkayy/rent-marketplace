@@ -122,6 +122,10 @@ async function main() {
     {
       name: 'Sony A7III + Lens 24-70mm',
       description: 'Mirrorless full-frame ความละเอียดสูง เหมาะสำหรับงานแต่งงานและพอร์ตเทรต',
+      images: [
+        'https://picsum.photos/seed/sony-a7iii/600/800',
+        'https://picsum.photos/seed/sony-lens/600/800',
+      ],
       pricePerDay: 1500,
       deposit: 10000,
       brand: 'Sony',
@@ -131,6 +135,10 @@ async function main() {
     {
       name: 'Canon EOS R6 Mark II',
       description: 'Mirrorless autofocus เร็ว เหมาะกับถ่ายกีฬาและ event',
+      images: [
+        'https://picsum.photos/seed/canon-r6/600/800',
+        'https://picsum.photos/seed/canon-body/600/800',
+      ],
       pricePerDay: 1800,
       deposit: 12000,
       brand: 'Canon',
@@ -140,6 +148,9 @@ async function main() {
     {
       name: 'DJI Osmo Action 4',
       description: 'Action camera กันน้ำ เหมาะสำหรับกีฬา outdoor',
+      images: [
+        'https://picsum.photos/seed/dji-action/600/800',
+      ],
       pricePerDay: 400,
       deposit: 3000,
       brand: 'DJI',
@@ -151,7 +162,7 @@ async function main() {
   for (const p of cameraProducts) {
     await prisma.product.upsert({
       where: { id: `seed-camera-${p.name}` },
-      update: {},
+      update: { images: p.images },
       create: {
         id: `seed-camera-${p.name}`,
         ...p,
@@ -166,6 +177,10 @@ async function main() {
     {
       name: 'ชุดราตรียาว สีแดงเข้ม',
       description: 'ชุดราตรียาว ผ้าไหมแท้ เหมาะสำหรับงานแต่งงานและงานเลี้ยง',
+      images: [
+        'https://picsum.photos/seed/red-evening-dress/600/800',
+        'https://picsum.photos/seed/red-dress-detail/600/800',
+      ],
       pricePerDay: 600,
       deposit: 2000,
       color: 'แดง',
@@ -177,6 +192,10 @@ async function main() {
     {
       name: 'สูทดำ Classic Fit',
       description: 'สูท 2 ชิ้น ทรง Classic สีดำ เหมาะสำหรับงานแต่งงานและงานทางการ',
+      images: [
+        'https://picsum.photos/seed/black-suit-classic/600/800',
+        'https://picsum.photos/seed/suit-detail/600/800',
+      ],
       pricePerDay: 500,
       deposit: 3000,
       color: 'ดำ',
@@ -188,6 +207,10 @@ async function main() {
     {
       name: 'ชุดราตรีสั้น สีทอง',
       description: 'ชุดราตรีสั้นประดับเลื่อม เหมาะสำหรับงานปาร์ตี้และ New Year',
+      images: [
+        'https://picsum.photos/seed/gold-party-dress/600/800',
+        'https://picsum.photos/seed/glitter-dress/600/800',
+      ],
       pricePerDay: 450,
       deposit: 1500,
       color: 'ทอง',
@@ -201,7 +224,7 @@ async function main() {
   for (const p of dressProducts) {
     await prisma.product.upsert({
       where: { id: `seed-dress-${p.name}` },
-      update: {},
+      update: { images: p.images },
       create: {
         id: `seed-dress-${p.name}`,
         ...p,
