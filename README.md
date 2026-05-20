@@ -164,4 +164,3 @@ PENDING → APPROVED  (โดย Admin)
 | Seller (Dress & Go) | `seller2@example.com` | `password123` |
 | Buyer | `buyer1@example.com` | `password123` |
 
-> เปลี่ยนรหัสผ่านก่อนใช้งานจริง
