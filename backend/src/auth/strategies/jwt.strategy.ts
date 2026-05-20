@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserRole } from '@prisma/client';
 import { TokenBlacklistService } from '../token-blacklist.service';
+import { UsersService } from '../../users/users.service';
 
 interface JwtPayload {
   sub: string;
@@ -18,6 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     configService: ConfigService,
     private tokenBlacklist: TokenBlacklistService,
+    private usersService: UsersService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -30,6 +32,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (payload.jti && this.tokenBlacklist.isRevoked(payload.jti)) {
       throw new UnauthorizedException('Token has been revoked');
     }
+
+    const user = await this.usersService.findById(payload.sub);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('User not found or inactive');
+    }
+
     return {
       userId: payload.sub,
       email: payload.email,

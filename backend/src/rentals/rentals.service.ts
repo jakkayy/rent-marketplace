@@ -34,13 +34,14 @@ export class RentalsService {
       dates.push(new Date(d));
     }
 
-    // Wrap availability check + rental creation in a transaction to prevent double booking
-    return this.prisma.$transaction(async (tx) => {
-      const blocked = await tx.availability.findMany({
-        where: { productId: dto.productId, date: { gte: start, lte: end }, isBooked: true },
-      });
-      if (blocked.length > 0) throw new ConflictException('Some dates are already booked');
+    // Check availability before transaction (NestJS exceptions must not be thrown inside $transaction)
+    const blocked = await this.prisma.availability.findMany({
+      where: { productId: dto.productId, date: { gte: start, lte: end }, isBooked: true },
+    });
+    if (blocked.length > 0) throw new ConflictException('Some dates are already booked');
 
+    // Transaction handles only the writes to prevent partial state
+    return this.prisma.$transaction(async (tx) => {
       const rental = await tx.rental.create({
         data: {
           renterId,
