@@ -9,6 +9,21 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { SetAvailabilityDto } from './dto/availability.dto';
 
+type FindAllQuery = {
+  categoryId?: string;
+  shopId?: string;
+  search?: string;
+  brand?: string;
+  size?: string;
+  color?: string;
+  occasion?: string;
+  priceMin?: number;
+  priceMax?: number;
+  sort?: string;
+  page?: number;
+  limit?: number;
+};
+
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
@@ -17,9 +32,7 @@ export class ProductsService {
     const shop = await this.prisma.shop.findUnique({
       where: { ownerId: userId },
     });
-    if (!shop) {
-      throw new ForbiddenException('You do not have a shop');
-    }
+    if (!shop) throw new ForbiddenException('You do not have a shop');
     return shop;
   }
 
@@ -49,23 +62,66 @@ export class ProductsService {
     });
   }
 
-  async findAll(query?: { categoryId?: string; shopId?: string; search?: string }) {
-    return this.prisma.product.findMany({
-      where: {
-        status: ProductStatus.AVAILABLE,
-        ...(query?.categoryId && { categoryId: query.categoryId }),
-        ...(query?.shopId && { shopId: query.shopId }),
-        ...(query?.search && {
-          name: { contains: query.search, mode: 'insensitive' as any },
-        }),
-      },
-      include: {
-        category: true,
-        shop: { select: { id: true, name: true, logo: true } },
-        _count: { select: { reviews: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll(query: FindAllQuery = {}) {
+    const { page = 1, limit = 20, sort, priceMin, priceMax, ...filters } = query;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      status: ProductStatus.AVAILABLE,
+      ...(filters.categoryId && { categoryId: filters.categoryId }),
+      ...(filters.shopId && { shopId: filters.shopId }),
+      ...(filters.brand && { brand: filters.brand }),
+      ...(filters.size && { size: filters.size }),
+      ...(filters.color && { color: filters.color }),
+      ...(filters.occasion && { occasion: filters.occasion }),
+      ...(filters.search && {
+        name: { contains: filters.search, mode: 'insensitive' },
+      }),
+      ...((priceMin !== undefined || priceMax !== undefined) && {
+        pricePerDay: {
+          ...(priceMin !== undefined && { gte: priceMin }),
+          ...(priceMax !== undefined && { lte: priceMax }),
+        },
+      }),
+    };
+
+    const orderBy = this.resolveSort(sort);
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          shop: { select: { id: true, name: true, logo: true } },
+          _count: { select: { reviews: true } },
+        },
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  private resolveSort(sort?: string) {
+    switch (sort) {
+      case 'priceAsc':
+        return { pricePerDay: 'asc' as const };
+      case 'priceDesc':
+        return { pricePerDay: 'desc' as const };
+      case 'popular':
+        return { reviews: { _count: 'desc' as const } };
+      default:
+        return { createdAt: 'desc' as const };
+    }
   }
 
   async findOne(id: string) {
@@ -80,10 +136,17 @@ export class ProductsService {
             logo: true,
             phone: true,
             lineId: true,
+            instagram: true,
             qrCodeUrl: true,
+            district: true,
           },
         },
-        reviews: { include: { author: { select: { firstName: true, lastName: true, avatar: true } } } },
+        reviews: {
+          include: {
+            author: { select: { firstName: true, lastName: true, avatar: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
@@ -116,10 +179,7 @@ export class ProductsService {
     const dates = dto.map((d) => new Date(d.date));
 
     await this.prisma.availability.deleteMany({
-      where: {
-        productId,
-        date: { in: dates },
-      },
+      where: { productId, date: { in: dates } },
     });
 
     return this.prisma.availability.createMany({
@@ -151,8 +211,6 @@ export class ProductsService {
   async remove(userId: string, productId: string) {
     await this.verifyProductOwner(productId, userId);
 
-    return this.prisma.product.delete({
-      where: { id: productId },
-    });
+    return this.prisma.product.delete({ where: { id: productId } });
   }
 }

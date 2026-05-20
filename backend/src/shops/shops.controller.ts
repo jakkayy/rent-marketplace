@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ShopsService } from './shops.service';
@@ -28,8 +29,18 @@ export class ShopsController {
   }
 
   @Get()
-  async findAll() {
-    return this.shopsService.findAll();
+  async findAll(
+    @Query('district') district?: string,
+    @Query('q') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.shopsService.findAll({
+      district,
+      search,
+      page: page ? Number(page) : 1,
+      limit: limit ? Math.min(Number(limit), 100) : 20,
+    });
   }
 
   @Get('my')

@@ -35,11 +35,28 @@ export class ShopsService {
     });
   }
 
-  async findAll() {
-    return this.prisma.shop.findMany({
-      where: { status: 'APPROVED' as any },
-      include: { owner: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
-    });
+  async findAll(query: { district?: string; search?: string; page?: number; limit?: number } = {}) {
+    const { district, search, page = 1, limit = 20 } = query;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      status: 'APPROVED',
+      ...(district && { district }),
+      ...(search && { name: { contains: search, mode: 'insensitive' } }),
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.shop.findMany({
+        where,
+        include: { owner: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.shop.count({ where }),
+    ]);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async findOne(id: string) {

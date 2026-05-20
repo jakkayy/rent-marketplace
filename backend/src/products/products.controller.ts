@@ -34,8 +34,30 @@ export class ProductsController {
     @Query('categoryId') categoryId?: string,
     @Query('shopId') shopId?: string,
     @Query('q') search?: string,
+    @Query('brand') brand?: string,
+    @Query('size') size?: string,
+    @Query('color') color?: string,
+    @Query('occasion') occasion?: string,
+    @Query('priceMin') priceMin?: string,
+    @Query('priceMax') priceMax?: string,
+    @Query('sort') sort?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.productsService.findAll({ categoryId, shopId, search });
+    return this.productsService.findAll({
+      categoryId,
+      shopId,
+      search,
+      brand,
+      size,
+      color,
+      occasion,
+      priceMin: priceMin ? Number(priceMin) : undefined,
+      priceMax: priceMax ? Number(priceMax) : undefined,
+      sort,
+      page: page ? Number(page) : 1,
+      limit: limit ? Math.min(Number(limit), 100) : 20,
+    });
   }
 
   @Get(':id')
