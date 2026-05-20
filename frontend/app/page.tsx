@@ -24,11 +24,11 @@ export default function HomePage() {
   async function loadProducts() {
     setLoading(true);
     try {
-      const data = await api.products.list({
+      const res = await api.products.list({
         ...(selectedCategory && { categoryId: selectedCategory }),
         ...(search && { q: search }),
       });
-      setProducts(data);
+      setProducts(res.data);
     } catch (err) {
       console.error(err);
     } finally {

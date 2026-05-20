@@ -84,7 +84,7 @@ export default function RegisterPage() {
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 required
-                minLength={6}
+                minLength={8}
               />
             </div>
             <div className="space-y-2">
