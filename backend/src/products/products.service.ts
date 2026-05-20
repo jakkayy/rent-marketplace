@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
+import { ProductStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -36,11 +37,13 @@ export class ProductsService {
 
   async create(userId: string, dto: CreateProductDto) {
     const shop = await this.getShopByOwner(userId);
+    const { status, ...rest } = dto;
 
     return this.prisma.product.create({
       data: {
-        ...dto,
+        ...rest,
         shopId: shop.id,
+        ...(status && { status: status as ProductStatus }),
       },
       include: { category: true, shop: true },
     });
@@ -49,7 +52,7 @@ export class ProductsService {
   async findAll(query?: { categoryId?: string; shopId?: string; search?: string }) {
     return this.prisma.product.findMany({
       where: {
-        isActive: true,
+        status: ProductStatus.AVAILABLE,
         ...(query?.categoryId && { categoryId: query.categoryId }),
         ...(query?.shopId && { shopId: query.shopId }),
         ...(query?.search && {
@@ -132,9 +135,15 @@ export class ProductsService {
   async update(userId: string, productId: string, dto: UpdateProductDto) {
     await this.verifyProductOwner(productId, userId);
 
+    const { status, categoryId, ...rest } = dto;
+
     return this.prisma.product.update({
       where: { id: productId },
-      data: dto,
+      data: {
+        ...rest,
+        ...(categoryId && { categoryId }),
+        ...(status && { status: status as ProductStatus }),
+      },
       include: { category: true },
     });
   }

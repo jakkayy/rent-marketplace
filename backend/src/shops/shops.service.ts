@@ -37,7 +37,7 @@ export class ShopsService {
 
   async findAll() {
     return this.prisma.shop.findMany({
-      where: { isActive: true },
+      where: { status: 'APPROVED' as any },
       include: { owner: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
     });
   }
@@ -47,7 +47,7 @@ export class ShopsService {
       where: { id },
       include: {
         owner: { select: { id: true, firstName: true, lastName: true, avatar: true } },
-        products: { where: { isActive: true } },
+        products: { where: { status: 'AVAILABLE' as any } },
       },
     });
 

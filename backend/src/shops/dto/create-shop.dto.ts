@@ -3,7 +3,7 @@ import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
 export class CreateShopDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()
@@ -23,6 +23,10 @@ export class CreateShopDto {
 
   @IsOptional()
   @IsString()
+  district?: string;
+
+  @IsOptional()
+  @IsString()
   phone?: string;
 
   @IsOptional()
@@ -31,5 +35,13 @@ export class CreateShopDto {
 
   @IsOptional()
   @IsString()
+  instagram?: string;
+
+  @IsOptional()
+  @IsString()
   qrCodeUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  openingHours?: string;
 }

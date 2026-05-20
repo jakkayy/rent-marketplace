@@ -15,7 +15,7 @@ export class CategoriesService {
   async findOne(id: string) {
     return this.prisma.category.findUnique({
       where: { id },
-      include: { products: { where: { isActive: true } } },
+      include: { products: { where: { status: 'AVAILABLE' } } },
     });
   }
 }

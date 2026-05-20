@@ -4,7 +4,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsArray,
-  IsUUID,
+  IsIn,
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -12,7 +12,7 @@ import { Type } from 'class-transformer';
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()
@@ -26,7 +26,7 @@ export class CreateProductDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   @Type(() => Number)
-  pricePerDay: number;
+  pricePerDay!: number;
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -36,8 +36,34 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
+  brand?: string;
+
+  @IsOptional()
+  @IsString()
+  size?: string;
+
+  @IsOptional()
+  @IsString()
+  color?: string;
+
+  @IsOptional()
+  @IsString()
+  occasion?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  tags?: string[];
+
+  @IsOptional()
+  @IsString()
   condition?: string;
 
-  @IsUUID()
-  categoryId: string;
+  @IsOptional()
+  @IsIn(['AVAILABLE', 'RESERVED', 'UNAVAILABLE', 'ARCHIVED'])
+  status?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  categoryId!: string;
 }

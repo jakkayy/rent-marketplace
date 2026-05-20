@@ -13,9 +13,23 @@ enum UserRole {
   ADMIN
 }
 
+enum ShopStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum ProductStatus {
+  AVAILABLE
+  RESERVED
+  UNAVAILABLE
+  ARCHIVED
+}
+
 enum RentalStatus {
   PENDING
   CONFIRMED
+  REJECTED
   ACTIVE
   COMPLETED
   CANCELLED
@@ -42,18 +56,21 @@ model User {
 }
 
 model Shop {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
-  logo        String?
-  banner      String?
-  address     String?
-  phone       String?
-  lineId      String?
-  qrCodeUrl   String?
-  isActive    Boolean @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  logo         String?
+  banner       String?
+  address      String?
+  district     String?
+  phone        String?
+  lineId       String?
+  instagram    String?
+  qrCodeUrl    String?
+  openingHours String?
+  status       ShopStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   ownerId String @unique
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -74,16 +91,21 @@ model Category {
 }
 
 model Product {
-  id          String  @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
   description String?
   images      String[]
-  pricePerDay Decimal @db.Decimal(10, 2)
-  deposit     Decimal? @db.Decimal(10, 2)
+  pricePerDay Decimal       @db.Decimal(10, 2)
+  deposit     Decimal?      @db.Decimal(10, 2)
+  brand       String?
+  size        String?
+  color       String?
+  occasion    String?
+  tags        String[]
   condition   String?
-  isActive    Boolean @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      ProductStatus @default(AVAILABLE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   shopId     String
   shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
