@@ -12,6 +12,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
 import { StorageModule } from './storage/storage.module';
+import { SearchModule } from './search/search.module';
 import { AppController } from './app.controller';
 import { LoggingMiddleware } from './common/middleware/logging.middleware';
 
@@ -35,6 +36,7 @@ import { LoggingMiddleware } from './common/middleware/logging.middleware';
     UploadModule,
     AdminModule,
     StorageModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

@@ -3,6 +3,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ProductStatus } from '@prisma/client';
 import { ProductsService } from './products.service';
 import { PrismaService } from '../database/prisma.service';
+import { SearchService } from '../search/search.service';
 
 const mockShop = { id: 'shop-1', ownerId: 'seller-1' };
 
@@ -50,12 +51,21 @@ describe('ProductsService', () => {
     $transaction: jest.fn(),
   };
 
+  const mockSearch = {
+    isAvailable: jest.fn().mockReturnValue(false),
+    upsert: jest.fn().mockResolvedValue(undefined),
+    delete: jest.fn().mockResolvedValue(undefined),
+    bulkUpsert: jest.fn().mockResolvedValue(undefined),
+    search: jest.fn().mockResolvedValue({ ids: [], total: 0 }),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
       providers: [
         ProductsService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: SearchService, useValue: mockSearch },
       ],
     }).compile();
 
