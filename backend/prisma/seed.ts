@@ -7,6 +7,11 @@ function img(seed: string) {
   return `https://picsum.photos/seed/${seed}/600/800`;
 }
 
+function safeId(prefix: string, name: string) {
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `seed-${prefix}-${slug}`;
+}
+
 async function main() {
   // ─── Categories ───────────────────────────────────────────────────────────
 
@@ -410,11 +415,12 @@ async function main() {
 
   for (const group of allProducts) {
     for (const p of group.items) {
+      const id = safeId(group.prefix, p.name);
       await prisma.product.upsert({
-        where: { id: `seed-${group.prefix}-${p.name}` },
+        where: { id },
         update: { images: p.images },
         create: {
-          id: `seed-${group.prefix}-${p.name}`,
+          id,
           ...p,
           shopId: group.shopId,
           categoryId: categoryMap[group.categorySlug],
