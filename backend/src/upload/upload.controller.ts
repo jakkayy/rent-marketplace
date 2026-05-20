@@ -1,4 +1,11 @@
-import { Controller, Post, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -14,21 +21,21 @@ export class UploadController {
       storage: diskStorage({
         destination: './uploads',
         filename: (_req, file, cb) => {
-          const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
-          cb(null, uniqueName);
+          cb(null, `${uuidv4()}${extname(file.originalname)}`);
         },
       }),
       limits: { fileSize: 5 * 1024 * 1024 },
       fileFilter: (_req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-          cb(new Error('Only image files are allowed'), false);
+          cb(new BadRequestException('Only jpg, png, and webp files are allowed'), false);
           return;
         }
         cb(null, true);
       },
     }),
   )
-  uploadFile(@UploadedFile() file: any) {
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No file provided');
     return {
       url: `/uploads/${file.filename}`,
       originalName: file.originalname,
