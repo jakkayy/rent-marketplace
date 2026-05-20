@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   token: string | null;
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,8 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(newUser);
   };
 
-  const logout = () => {
-    // Call backend to blacklist the JWT (fire-and-forget)
+  const logout = useCallback(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"}/auth/logout`, {
       method: "POST",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -50,7 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user");
     setToken(null);
     setUser(null);
-  };
+    router.push("/");
+  }, [router]);
 
   return (
     <AuthContext.Provider value={{ token, user, login, logout, isLoading }}>

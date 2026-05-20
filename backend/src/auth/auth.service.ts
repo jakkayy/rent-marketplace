@@ -80,11 +80,13 @@ export class AuthService {
       data: { token: tokenHash, userId: user.id, expiresAt },
     });
 
-    // In production: send plainToken via email. For now, return it directly.
-    return {
-      message: 'If that email exists, a reset link has been sent',
-      resetToken: plainToken, // remove in production
-    };
+    // TODO: send plainToken via email (e.g. SendGrid, Resend)
+    // For local dev: token is logged below — remove before production
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[DEV] Password reset token for ${user.email}: ${plainToken}`);
+    }
+
+    return { message: 'If that email exists, a reset link has been sent' };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
