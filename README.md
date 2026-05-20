@@ -157,10 +157,14 @@ PENDING → APPROVED  (โดย Admin)
 
 หลัง `make prisma-seed`:
 
-| Role | Email | Password |
-|---|---|---|
-| Admin | `admin@marketplace.com` | `admin1234` |
-| Seller (CameraHub) | `seller1@example.com` | `password123` |
-| Seller (Dress & Go) | `seller2@example.com` | `password123` |
-| Buyer | `buyer1@example.com` | `password123` |
+| Role | Email | Password | Shop |
+|---|---|---|---|
+| Admin | `admin@marketplace.com` | `admin1234` | — |
+| Seller | `seller1@example.com` | `password123` | CameraHub เช่ากล้อง |
+| Seller | `seller2@example.com` | `password123` | Dress & Go เช่าชุด |
+| Seller | `seller3@example.com` | `password123` | GearUp เช่าอุปกรณ์ |
+| Seller | `seller4@example.com` | `password123` | Sound & Stage |
+| Seller | `seller5@example.com` | `password123` | GameZone เช่าเกม |
+| Buyer | `buyer1@example.com` | `password123` | — |
+| Buyer | `buyer2@example.com` | `password123` | — |
 
