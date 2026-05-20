@@ -41,7 +41,12 @@ describe('ProductsService', () => {
       delete: jest.fn(),
       count: jest.fn(),
     },
-    availability: { findMany: jest.fn() },
+    availability: {
+      findMany: jest.fn(),
+      deleteMany: jest.fn(),
+      createMany: jest.fn(),
+    },
+    contactEvent: { create: jest.fn() },
     $transaction: jest.fn(),
   };
 
@@ -108,6 +113,109 @@ describe('ProductsService', () => {
       prisma.$transaction.mockResolvedValue([[], 0]);
       const result = await service.findAll({ priceMin: 100, priceMax: 300 });
       expect(result.data).toHaveLength(0);
+    });
+
+    it('should sort by priceAsc', async () => {
+      prisma.$transaction.mockResolvedValue([[mockProduct], 1]);
+      const result = await service.findAll({ sort: 'priceAsc' });
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should sort by priceDesc', async () => {
+      prisma.$transaction.mockResolvedValue([[mockProduct], 1]);
+      const result = await service.findAll({ sort: 'priceDesc' });
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should sort by popular', async () => {
+      prisma.$transaction.mockResolvedValue([[mockProduct], 1]);
+      const result = await service.findAll({ sort: 'popular' });
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should filter by search keyword', async () => {
+      prisma.$transaction.mockResolvedValue([[mockProduct], 1]);
+      const result = await service.findAll({ search: 'camera' });
+      expect(result.data).toHaveLength(1);
+    });
+  });
+
+  // ─── getAvailability ──────────────────────────────────────────────────────
+
+  describe('getAvailability', () => {
+    it('should return availability for a product', async () => {
+      prisma.product.findUnique.mockResolvedValue(mockProduct);
+      prisma.availability.findMany.mockResolvedValue([
+        { date: new Date('2026-06-01'), isBooked: false },
+        { date: new Date('2026-06-02'), isBooked: true },
+      ]);
+
+      const result = await service.getAvailability('product-1');
+      expect(result).toHaveLength(2);
+    });
+
+    it('should filter by month when provided', async () => {
+      prisma.product.findUnique.mockResolvedValue(mockProduct);
+      prisma.availability.findMany.mockResolvedValue([]);
+
+      await service.getAvailability('product-1', '2026-06');
+      expect(prisma.availability.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ date: expect.any(Object) }) }),
+      );
+    });
+
+    it('should throw NotFoundException when product not found', async () => {
+      prisma.product.findUnique.mockResolvedValue(null);
+      await expect(service.getAvailability('no-product')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── setAvailability ──────────────────────────────────────────────────────
+
+  describe('setAvailability', () => {
+    const dto = [{ date: '2026-06-01', isBooked: true }, { date: '2026-06-02', isBooked: false }];
+
+    it('should set availability when owner', async () => {
+      prisma.product.findUnique.mockResolvedValue(mockProduct);
+      prisma.availability.deleteMany.mockResolvedValue({ count: 0 });
+      prisma.availability.createMany.mockResolvedValue({ count: 2 });
+
+      const result = await service.setAvailability('seller-1', 'product-1', dto);
+      expect(prisma.availability.deleteMany).toHaveBeenCalled();
+      expect(prisma.availability.createMany).toHaveBeenCalled();
+      expect(result.count).toBe(2);
+    });
+
+    it('should throw ForbiddenException when not product owner', async () => {
+      prisma.product.findUnique.mockResolvedValue(mockProduct);
+      await expect(service.setAvailability('other-seller', 'product-1', dto)).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  // ─── trackContact ─────────────────────────────────────────────────────────
+
+  describe('trackContact', () => {
+    const mockProductWithShop = { shopId: 'shop-1', shop: { lineId: '@camerahub' } };
+
+    it('should track contact and return lineId', async () => {
+      prisma.product.findUnique.mockResolvedValue(mockProductWithShop);
+      prisma.contactEvent.create.mockResolvedValue({});
+
+      const result = await service.trackContact('product-1', 'user-1', 'product_detail');
+      expect(result.lineId).toBe('@camerahub');
+    });
+
+    it('should track contact without userId (guest)', async () => {
+      prisma.product.findUnique.mockResolvedValue(mockProductWithShop);
+      prisma.contactEvent.create.mockResolvedValue({});
+
+      const result = await service.trackContact('product-1', null);
+      expect(result.lineId).toBe('@camerahub');
+    });
+
+    it('should throw NotFoundException when product not found', async () => {
+      prisma.product.findUnique.mockResolvedValue(null);
+      await expect(service.trackContact('no-product', null)).rejects.toThrow(NotFoundException);
     });
   });
 

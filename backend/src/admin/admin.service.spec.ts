@@ -143,6 +143,67 @@ describe('AdminService', () => {
     });
   });
 
+  // ─── listUsers ────────────────────────────────────────────────────────────
+
+  describe('listUsers', () => {
+    it('should return paginated users without password', async () => {
+      prisma.$transaction.mockResolvedValue([[mockUser], 1]);
+      const result = await service.listUsers({ page: 1, limit: 10 });
+      expect(result.data).toHaveLength(1);
+      expect(result.total).toBe(1);
+    });
+
+    it('should return correct totalPages', async () => {
+      prisma.$transaction.mockResolvedValue([[], 25]);
+      const result = await service.listUsers({ page: 1, limit: 10 });
+      expect(result.totalPages).toBe(3);
+    });
+  });
+
+  // ─── listProducts ─────────────────────────────────────────────────────────
+
+  describe('listProducts', () => {
+    const mockProduct = { id: 'product-1', name: 'Camera', status: 'AVAILABLE' };
+
+    it('should return paginated products', async () => {
+      prisma.$transaction.mockResolvedValue([[mockProduct], 1]);
+      const result = await service.listProducts();
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should filter by status', async () => {
+      prisma.$transaction.mockResolvedValue([[mockProduct], 1]);
+      const result = await service.listProducts({ status: 'AVAILABLE' });
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should throw BadRequestException for invalid product status', async () => {
+      await expect(service.listProducts({ status: 'INVALID' })).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  // ─── listRentals ──────────────────────────────────────────────────────────
+
+  describe('listRentals', () => {
+    const mockRental = { id: 'rental-1', status: 'PENDING' };
+
+    it('should return paginated rentals', async () => {
+      prisma.$transaction.mockResolvedValue([[mockRental], 1]);
+      const result = await service.listRentals();
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should filter by status CONFIRMED', async () => {
+      prisma.$transaction.mockResolvedValue([[], 0]);
+      const result = await service.listRentals({ status: 'CONFIRMED' });
+      expect(result.total).toBe(0);
+    });
+
+    it('should throw BadRequestException for invalid rental status', async () => {
+      await expect(service.listRentals({ status: 'INVALID' })).rejects.toThrow(BadRequestException);
+    });
+  });
+
   // ─── getStats ─────────────────────────────────────────────────────────────
 
   describe('getStats', () => {

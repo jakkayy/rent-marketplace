@@ -213,6 +213,26 @@ describe('RentalsService', () => {
     });
   });
 
+  // ─── findMyRentals ────────────────────────────────────────────────────────
+
+  describe('findMyRentals', () => {
+    it('should return paginated rentals for a buyer', async () => {
+      prisma.$transaction.mockResolvedValue([[mockRental], 1]);
+
+      const result = await service.findMyRentals('buyer-1');
+      expect(result.data).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(result.page).toBe(1);
+    });
+
+    it('should return empty list when no rentals', async () => {
+      prisma.$transaction.mockResolvedValue([[], 0]);
+      const result = await service.findMyRentals('buyer-1', { page: 1, limit: 10 });
+      expect(result.data).toHaveLength(0);
+      expect(result.totalPages).toBe(0);
+    });
+  });
+
   // ─── findShopRentals ──────────────────────────────────────────────────────
 
   describe('findShopRentals', () => {
