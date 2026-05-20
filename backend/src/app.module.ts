@@ -13,7 +13,6 @@ import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
 import { StorageModule } from './storage/storage.module';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { LoggingMiddleware } from './common/middleware/logging.middleware';
 
 @Module({
@@ -39,7 +38,6 @@ import { LoggingMiddleware } from './common/middleware/logging.middleware';
   ],
   controllers: [AppController],
   providers: [
-    AppService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })

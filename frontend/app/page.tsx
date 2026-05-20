@@ -6,7 +6,8 @@ import { api } from "@/lib/api";
 import type { Product, Category, Shop } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Check, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MapPin, Check, ArrowRight, Search } from "lucide-react";
 
 const OCCASIONS = [
   { label: "ทั้งหมด", value: "" },
@@ -35,14 +36,16 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedOccasion, setSelectedOccasion] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const loadProducts = useCallback(async (occasion: string, categoryId: string) => {
+  const loadProducts = useCallback(async (occasion: string, categoryId: string, q: string) => {
     setLoading(true);
     try {
       const res = await api.products.list({
         ...(occasion && { occasion }),
         ...(categoryId && { categoryId }),
+        ...(q && { q }),
         limit: 8,
       });
       setProducts(res.data);
@@ -59,7 +62,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    loadProducts(selectedOccasion, selectedCategory);
+    loadProducts(selectedOccasion, selectedCategory, search);
   }, [selectedOccasion, selectedCategory, loadProducts]);
 
   return (
@@ -105,6 +108,23 @@ export default function HomePage() {
       {/* Browse */}
       <section id="products" className="px-6 py-12">
         <div className="mx-auto max-w-6xl">
+          {/* Search */}
+          <form
+            onSubmit={(e) => { e.preventDefault(); loadProducts(selectedOccasion, selectedCategory, search); }}
+            className="mb-6 flex gap-2"
+          >
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="ค้นหาสินค้า..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button type="submit">ค้นหา</Button>
+          </form>
+
           {/* Occasion filter */}
           <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {OCCASIONS.map((o) => (
