@@ -1,7 +1,8 @@
-import { IsDateString, IsString, IsOptional, IsUUID } from 'class-validator';
+import { IsDateString, IsString, IsOptional, IsNotEmpty } from 'class-validator';
 
 export class CreateRentalDto {
-  @IsUUID()
+  @IsString()
+  @IsNotEmpty()
   productId!: string;
 
   @IsDateString()
