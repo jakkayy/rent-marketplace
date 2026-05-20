@@ -153,10 +153,15 @@ PENDING → APPROVED  (โดย Admin)
         → SUSPENDED (โดย Admin)
 ```
 
-## Default Admin Account
+## Test Accounts
 
 หลัง `make prisma-seed`:
-- Email: `admin@marketplace.com`
-- Password: `admin1234`
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@marketplace.com` | `admin1234` |
+| Seller (CameraHub) | `seller1@example.com` | `password123` |
+| Seller (Dress & Go) | `seller2@example.com` | `password123` |
+| Buyer | `buyer1@example.com` | `password123` |
 
 > เปลี่ยนรหัสผ่านก่อนใช้งานจริง
