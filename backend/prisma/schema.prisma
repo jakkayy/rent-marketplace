@@ -49,11 +49,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  shop           Shop?
-  rentals        Rental[]
-  favorites      Favorite[]
-  reviews        Review[]
-  contactEvents  ContactEvent[]
+  shop                 Shop?
+  rentals              Rental[]
+  favorites            Favorite[]
+  reviews              Review[]
+  contactEvents        ContactEvent[]
+  passwordResetTokens  PasswordResetToken[]
 }
 
 model Shop {
@@ -185,6 +186,19 @@ model Favorite {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model ContactEvent {
