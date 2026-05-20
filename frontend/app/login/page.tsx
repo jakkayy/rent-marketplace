@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       const data = await api.auth.login({ email, password });
       login(data.accessToken, data.user);
-      router.push("/");
+      router.push(data.user.role === "SELLER" ? "/shop" : "/");
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {

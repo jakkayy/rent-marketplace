@@ -29,7 +29,7 @@ export default function RegisterPage() {
     try {
       const data = await api.auth.register(form);
       login(data.accessToken, data.user);
-      router.push("/");
+      router.push(data.user.role === "SELLER" ? "/shop" : "/");
     } catch (err: any) {
       setError(err.message || "Registration failed");
     } finally {
