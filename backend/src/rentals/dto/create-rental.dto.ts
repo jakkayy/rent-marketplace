@@ -1,15 +1,14 @@
-import { IsDateString, IsString, IsOptional, IsUUID, IsInt, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDateString, IsString, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateRentalDto {
   @IsUUID()
-  productId: string;
+  productId!: string;
 
   @IsDateString()
-  startDate: string;
+  startDate!: string;
 
   @IsDateString()
-  endDate: string;
+  endDate!: string;
 
   @IsOptional()
   @IsString()
