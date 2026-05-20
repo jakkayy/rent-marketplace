@@ -14,6 +14,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { SetAvailabilityDto } from './dto/availability.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('products')
@@ -63,6 +64,16 @@ export class ProductsController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
+  }
+
+  @Post(':id/contact')
+  @UseGuards(OptionalJwtAuthGuard)
+  async trackContact(
+    @Param('id') id: string,
+    @Query('source') source?: string,
+    @CurrentUser() user?: { userId: string } | null,
+  ) {
+    return this.productsService.trackContact(id, user?.userId ?? null, source);
   }
 
   @Get(':id/availability')

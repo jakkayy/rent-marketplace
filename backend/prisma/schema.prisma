@@ -49,10 +49,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  shop      Shop?
-  rentals   Rental[]
-  favorites Favorite[]
-  reviews   Review[]
+  shop           Shop?
+  rentals        Rental[]
+  favorites      Favorite[]
+  reviews        Review[]
+  contactEvents  ContactEvent[]
 }
 
 model Shop {
@@ -75,8 +76,9 @@ model Shop {
   ownerId String @unique
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  products Product[]
-  rentals  Rental[]
+  products       Product[]
+  rentals        Rental[]
+  contactEvents  ContactEvent[]
 }
 
 model Category {
@@ -112,10 +114,11 @@ model Product {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
-  rentals      Rental[]
-  availability Availability[]
-  reviews      Review[]
-  favorites    Favorite[]
+  rentals        Rental[]
+  availability   Availability[]
+  reviews        Review[]
+  favorites      Favorite[]
+  contactEvents  ContactEvent[]
 
   @@index([shopId])
   @@index([categoryId])
@@ -182,4 +185,20 @@ model Favorite {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+}
+
+model ContactEvent {
+  id        String   @id @default(cuid())
+  source    String   @default("product_detail")
+  createdAt DateTime @default(now())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  shopId    String
+  shop      Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([shopId])
 }

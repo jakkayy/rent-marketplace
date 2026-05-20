@@ -213,4 +213,23 @@ export class ProductsService {
 
     return this.prisma.product.delete({ where: { id: productId } });
   }
+
+  async trackContact(productId: string, userId: string | null, source?: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { shopId: true, shop: { select: { lineId: true } } },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    await this.prisma.contactEvent.create({
+      data: {
+        productId,
+        shopId: product.shopId,
+        source: source ?? 'product_detail',
+        ...(userId && { userId }),
+      },
+    });
+
+    return { lineId: product.shop.lineId };
+  }
 }
