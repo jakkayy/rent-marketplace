@@ -1,4 +1,5 @@
 import { Controller, Post, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SearchService } from './search.service';
 import { PrismaService } from '../database/prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -6,6 +7,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
+@ApiTags('Admin')
+@ApiBearerAuth()
 @Controller('search')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
@@ -16,6 +19,7 @@ export class SearchController {
   ) {}
 
   @Post('reindex')
+  @ApiOperation({ summary: 'ซิงค์สินค้าทั้งหมดไปยัง Meilisearch ใหม่ (เฉพาะ ADMIN)' })
   async reindex() {
     const products = await this.prisma.product.findMany({
       include: { shop: true },

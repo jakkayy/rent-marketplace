@@ -7,6 +7,7 @@ import {
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -26,11 +27,15 @@ const multerOptions = {
   fileFilter: imageFilter,
 };
 
+@ApiTags('Upload')
+@ApiBearerAuth()
 @Controller('upload')
 export class UploadController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post()
+  @ApiOperation({ summary: 'อัปโหลดรูปภาพ 1 รูป (jpg, png, webp — สูงสุด 5MB)' })
+  @ApiConsumes('multipart/form-data')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', multerOptions))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
@@ -40,6 +45,8 @@ export class UploadController {
   }
 
   @Post('multiple')
+  @ApiOperation({ summary: 'อัปโหลดรูปภาพพร้อมกันสูงสุด 10 รูป' })
+  @ApiConsumes('multipart/form-data')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files', 10, multerOptions))
   async uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {

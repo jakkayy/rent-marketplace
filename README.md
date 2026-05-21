@@ -53,8 +53,46 @@ make dev
 ```
 
 - Backend: http://localhost:3001/api
+- **Swagger API Docs: http://localhost:3001/docs**
 - Frontend: http://localhost:3000
 - MinIO Console: http://localhost:9001 (login: `marketplace` / `marketplace123`)
+
+## Swagger API Docs
+
+เปิด http://localhost:3001/docs หลัง start backend แล้วทดสอบ API ได้ทันที
+
+### วิธีใช้งาน
+
+**ขั้นตอนที่ 1 — Login**
+
+เลื่อนไปที่ `Auth` → `POST /api/auth/login` → กด **Try it out** → ใส่ข้อมูล → **Execute**
+
+```json
+{
+  "email": "seller1@example.com",
+  "password": "password123"
+}
+```
+
+Copy ค่า `access_token` จาก response
+
+**ขั้นตอนที่ 2 — Authorize**
+
+กดปุ่ม **Authorize 🔒** ด้านบนขวาของหน้า → วาง token ใน Value → กด **Authorize**
+
+> ไม่ต้องใส่คำว่า `Bearer` นำหน้า — Swagger เติมให้อัตโนมัติ
+
+**ขั้นตอนที่ 3 — ทดสอบ**
+
+Endpoint ที่มีไอคอน 🔒 จะใช้งานได้ทันที ไม่ต้องใส่ token ซ้ำทุก request
+
+### Test Accounts สำหรับทดสอบ
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@marketplace.com` | `admin1234` |
+| Seller (มีร้านแล้ว) | `seller1@example.com` | `password123` |
+| Buyer | `buyer1@example.com` | `password123` |
 
 ## Available Commands
 
