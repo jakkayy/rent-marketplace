@@ -1,5 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Prisma, ShopStatus, ProductStatus, RentalStatus } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  Prisma,
+  ShopStatus,
+  ProductStatus,
+  RentalStatus,
+} from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
@@ -8,7 +17,9 @@ export class AdminService {
 
   // ─── Shops ───────────────────────────────────────────────────────────────
 
-  async listShops(query: { status?: string; page?: number; limit?: number } = {}) {
+  async listShops(
+    query: { status?: string; page?: number; limit?: number } = {},
+  ) {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
@@ -21,7 +32,11 @@ export class AdminService {
     const [data, total] = await this.prisma.$transaction([
       this.prisma.shop.findMany({
         where,
-        include: { owner: { select: { id: true, email: true, firstName: true, lastName: true } } },
+        include: {
+          owner: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
+        },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -47,8 +62,14 @@ export class AdminService {
     const [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         select: {
-          id: true, email: true, firstName: true, lastName: true,
-          role: true, phone: true, isActive: true, createdAt: true,
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          phone: true,
+          isActive: true,
+          createdAt: true,
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -72,11 +93,16 @@ export class AdminService {
 
   // ─── Products ────────────────────────────────────────────────────────────
 
-  async listProducts(query: { status?: string; page?: number; limit?: number } = {}) {
+  async listProducts(
+    query: { status?: string; page?: number; limit?: number } = {},
+  ) {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
-    if (status && !Object.values(ProductStatus).includes(status as ProductStatus)) {
+    if (
+      status &&
+      !Object.values(ProductStatus).includes(status as ProductStatus)
+    ) {
       throw new BadRequestException(`Invalid product status: ${status}`);
     }
     const where: Prisma.ProductWhereInput = {};
@@ -100,18 +126,28 @@ export class AdminService {
   }
 
   async updateProductStatus(productId: string, status: ProductStatus) {
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
     if (!product) throw new NotFoundException('Product not found');
-    return this.prisma.product.update({ where: { id: productId }, data: { status } });
+    return this.prisma.product.update({
+      where: { id: productId },
+      data: { status },
+    });
   }
 
   // ─── Rentals ─────────────────────────────────────────────────────────────
 
-  async listRentals(query: { status?: string; page?: number; limit?: number } = {}) {
+  async listRentals(
+    query: { status?: string; page?: number; limit?: number } = {},
+  ) {
     const { status, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
-    if (status && !Object.values(RentalStatus).includes(status as RentalStatus)) {
+    if (
+      status &&
+      !Object.values(RentalStatus).includes(status as RentalStatus)
+    ) {
       throw new BadRequestException(`Invalid rental status: ${status}`);
     }
     const where: Prisma.RentalWhereInput = {};
@@ -123,7 +159,9 @@ export class AdminService {
         include: {
           product: { select: { id: true, name: true } },
           shop: { select: { id: true, name: true } },
-          renter: { select: { id: true, email: true, firstName: true, lastName: true } },
+          renter: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip,

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Prisma, UserRole, ShopStatus, ProductStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { CreateShopDto } from './dto/create-shop.dto';
@@ -13,7 +18,9 @@ export class ShopsService {
       throw new ForbiddenException('Only sellers can create a shop');
     }
 
-    const existing = await this.prisma.shop.findUnique({ where: { ownerId: userId } });
+    const existing = await this.prisma.shop.findUnique({
+      where: { ownerId: userId },
+    });
     if (existing) throw new ConflictException('You already have a shop');
 
     return this.prisma.shop.create({
@@ -22,18 +29,30 @@ export class ShopsService {
     });
   }
 
-  async findAll(query: { district?: string; search?: string; page?: number; limit?: number } = {}) {
+  async findAll(
+    query: {
+      district?: string;
+      search?: string;
+      page?: number;
+      limit?: number;
+    } = {},
+  ) {
     const { district, search, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
     const where: Prisma.ShopWhereInput = { status: ShopStatus.APPROVED };
     if (district) where.district = district;
-    if (search) where.name = { contains: search, mode: Prisma.QueryMode.insensitive };
+    if (search)
+      where.name = { contains: search, mode: Prisma.QueryMode.insensitive };
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.shop.findMany({
         where,
-        include: { owner: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
+        include: {
+          owner: {
+            select: { id: true, firstName: true, lastName: true, avatar: true },
+          },
+        },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -48,7 +67,9 @@ export class ShopsService {
     const shop = await this.prisma.shop.findUnique({
       where: { id },
       include: {
-        owner: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        owner: {
+          select: { id: true, firstName: true, lastName: true, avatar: true },
+        },
         products: { where: { status: ProductStatus.AVAILABLE } },
       },
     });
@@ -66,13 +87,17 @@ export class ShopsService {
   }
 
   async update(userId: string, dto: UpdateShopDto) {
-    const shop = await this.prisma.shop.findUnique({ where: { ownerId: userId } });
+    const shop = await this.prisma.shop.findUnique({
+      where: { ownerId: userId },
+    });
     if (!shop) throw new NotFoundException('Shop not found');
     return this.prisma.shop.update({ where: { id: shop.id }, data: dto });
   }
 
   async remove(userId: string) {
-    const shop = await this.prisma.shop.findUnique({ where: { ownerId: userId } });
+    const shop = await this.prisma.shop.findUnique({
+      where: { ownerId: userId },
+    });
     if (!shop) throw new NotFoundException('Shop not found');
     return this.prisma.shop.delete({ where: { id: shop.id } });
   }

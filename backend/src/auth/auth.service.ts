@@ -66,7 +66,8 @@ export class AuthService {
     const user = await this.usersService.findByEmail(dto.email);
 
     // Always return the same response to prevent email enumeration
-    if (!user) return { message: 'If that email exists, a reset link has been sent' };
+    if (!user)
+      return { message: 'If that email exists, a reset link has been sent' };
 
     // Invalidate any existing unused tokens
     await this.prisma.passwordResetToken.updateMany({
@@ -75,7 +76,10 @@ export class AuthService {
     });
 
     const plainToken = crypto.randomBytes(32).toString('hex');
-    const tokenHash = crypto.createHash('sha256').update(plainToken).digest('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(plainToken)
+      .digest('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     await this.prisma.passwordResetToken.create({
@@ -88,7 +92,10 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const tokenHash = crypto.createHash('sha256').update(dto.token).digest('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(dto.token)
+      .digest('hex');
 
     const record = await this.prisma.passwordResetToken.findUnique({
       where: { token: tokenHash },

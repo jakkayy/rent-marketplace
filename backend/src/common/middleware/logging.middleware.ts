@@ -14,7 +14,13 @@ export class LoggingMiddleware implements NestMiddleware {
       const { statusCode } = res;
       const duration = Date.now() - start;
       const color =
-        statusCode >= 500 ? 31 : statusCode >= 400 ? 33 : statusCode >= 300 ? 36 : 32;
+        statusCode >= 500
+          ? 31
+          : statusCode >= 400
+            ? 33
+            : statusCode >= 300
+              ? 36
+              : 32;
       this.logger.log(
         `\x1b[${color}m${method} ${originalUrl} ${statusCode}\x1b[0m ${duration}ms — ${ip} ${userAgent}`,
       );

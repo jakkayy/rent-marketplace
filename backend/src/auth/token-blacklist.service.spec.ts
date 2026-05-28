@@ -9,7 +9,10 @@ describe('TokenBlacklistService', () => {
     const module = await Test.createTestingModule({
       providers: [
         TokenBlacklistService,
-        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(undefined) } },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn().mockReturnValue(undefined) },
+        },
       ],
     }).compile();
 

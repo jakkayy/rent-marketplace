@@ -26,14 +26,17 @@ async function bootstrap() {
     .setTitle('Marketplace API')
     .setDescription(
       '## วิธีใช้งาน\n' +
-      '1. เรียก **Auth → เข้าสู่ระบบ** แล้ว copy `access_token`\n' +
-      '2. กดปุ่ม **Authorize 🔒** ด้านบน แล้ววาง token\n' +
-      '3. ทดสอบ endpoint ที่ต้องการได้เลย\n\n' +
-      '> endpoint ที่มีไอคอน 🔒 ต้องการ token ก่อนใช้งาน',
+        '1. เรียก **Auth → เข้าสู่ระบบ** แล้ว copy `access_token`\n' +
+        '2. กดปุ่ม **Authorize 🔒** ด้านบน แล้ววาง token\n' +
+        '3. ทดสอบ endpoint ที่ต้องการได้เลย\n\n' +
+        '> endpoint ที่มีไอคอน 🔒 ต้องการ token ก่อนใช้งาน',
     )
     .setVersion('1.0')
     .addBearerAuth()
-    .addTag('Auth', 'สมัครสมาชิก / เข้าสู่ระบบ / รีเซ็ตรหัสผ่าน — เริ่มต้นที่นี่')
+    .addTag(
+      'Auth',
+      'สมัครสมาชิก / เข้าสู่ระบบ / รีเซ็ตรหัสผ่าน — เริ่มต้นที่นี่',
+    )
     .addTag('Users', 'จัดการโปรไฟล์และรายการโปรด')
     .addTag('Categories', 'หมวดหมู่สินค้า (ข้อมูลอ้างอิง)')
     .addTag('Shops', 'สร้างและจัดการร้าน')
@@ -50,4 +53,4 @@ async function bootstrap() {
   console.log(`Server running on http://localhost:${port}/api`);
   console.log(`Swagger docs at http://localhost:${port}/docs`);
 }
-bootstrap();
+void bootstrap();

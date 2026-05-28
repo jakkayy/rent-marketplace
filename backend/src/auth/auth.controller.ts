@@ -1,5 +1,10 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -16,7 +21,10 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ summary: 'สมัครสมาชิกใหม่' })
-  @ApiResponse({ status: 201, description: 'สมัครสำเร็จ — ได้รับ access_token' })
+  @ApiResponse({
+    status: 201,
+    description: 'สมัครสำเร็จ — ได้รับ access_token',
+  })
   @ApiResponse({ status: 409, description: 'อีเมลนี้ถูกใช้งานแล้ว' })
   @Throttle({ default: { ttl: 60_000, limit: 10 } })
   register(@Body() dto: RegisterDto) {
@@ -25,7 +33,10 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'เข้าสู่ระบบ รับ JWT token' })
-  @ApiResponse({ status: 201, description: 'เข้าสู่ระบบสำเร็จ — ได้รับ access_token' })
+  @ApiResponse({
+    status: 201,
+    description: 'เข้าสู่ระบบสำเร็จ — ได้รับ access_token',
+  })
   @ApiResponse({ status: 401, description: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' })
   @Throttle({ default: { ttl: 60_000, limit: 10 } })
   login(@Body() dto: LoginDto) {
@@ -44,7 +55,10 @@ export class AuthController {
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'ขอ email รีเซ็ตรหัสผ่าน' })
-  @ApiResponse({ status: 201, description: 'ส่ง email สำเร็จ (คืน 200 เสมอเพื่อป้องกัน user enumeration)' })
+  @ApiResponse({
+    status: 201,
+    description: 'ส่ง email สำเร็จ (คืน 200 เสมอเพื่อป้องกัน user enumeration)',
+  })
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);

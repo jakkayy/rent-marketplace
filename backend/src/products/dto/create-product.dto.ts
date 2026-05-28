@@ -16,7 +16,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   name!: string;
 
-  @ApiPropertyOptional({ example: 'ชุดราตรีแขนกุด ทรง A-line เหมาะสำหรับงานแต่งงาน' })
+  @ApiPropertyOptional({
+    example: 'ชุดราตรีแขนกุด ทรง A-line เหมาะสำหรับงานแต่งงาน',
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -71,7 +73,9 @@ export class CreateProductDto {
   @IsString()
   condition?: string;
 
-  @ApiPropertyOptional({ enum: ['AVAILABLE', 'RESERVED', 'UNAVAILABLE', 'ARCHIVED'] })
+  @ApiPropertyOptional({
+    enum: ['AVAILABLE', 'RESERVED', 'UNAVAILABLE', 'ARCHIVED'],
+  })
   @IsOptional()
   @IsIn(['AVAILABLE', 'RESERVED', 'UNAVAILABLE', 'ARCHIVED'])
   status?: string;

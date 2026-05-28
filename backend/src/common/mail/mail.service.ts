@@ -15,7 +15,9 @@ export class MailService {
     if (apiKey) {
       this.resend = new Resend(apiKey);
     } else {
-      this.logger.warn('RESEND_API_KEY not set — emails will be logged to console only');
+      this.logger.warn(
+        'RESEND_API_KEY not set — emails will be logged to console only',
+      );
     }
   }
 

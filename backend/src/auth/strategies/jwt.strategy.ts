@@ -29,7 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayload) {
-    if (payload.jti && await this.tokenBlacklist.isRevoked(payload.jti)) {
+    if (payload.jti && (await this.tokenBlacklist.isRevoked(payload.jti))) {
       throw new UnauthorizedException('Token has been revoked');
     }
 

@@ -1,4 +1,9 @@
-import { Injectable, OnModuleDestroy, OnModuleInit, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
@@ -17,18 +22,23 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
 
     this.redis = new Redis({ host, port, lazyConnect: true });
 
-    this.redis.connect()
+    this.redis
+      .connect()
       .then(() => {
         this.useRedis = true;
         this.logger.log(`Connected to Redis at ${host}:${port}`);
       })
-      .catch((err) => {
-        this.logger.warn(`Redis unavailable (${err.message}), using in-memory fallback`);
+      .catch((err: Error) => {
+        this.logger.warn(
+          `Redis unavailable (${err.message}), using in-memory fallback`,
+        );
       });
 
     this.redis.on('error', (err) => {
       if (this.useRedis) {
-        this.logger.warn(`Redis error: ${err.message}, switched to in-memory fallback`);
+        this.logger.warn(
+          `Redis error: ${err.message}, switched to in-memory fallback`,
+        );
         this.useRedis = false;
       }
     });

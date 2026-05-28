@@ -23,12 +23,27 @@ const mockUser = {
 
 describe('AdminService', () => {
   let service: AdminService;
-  let prisma: any;
+  let prisma: typeof mockPrisma;
 
   const mockPrisma = {
-    shop: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), count: jest.fn() },
-    user: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), count: jest.fn() },
-    product: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), count: jest.fn() },
+    shop: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
+    product: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
     rental: { findMany: jest.fn(), count: jest.fn() },
     contactEvent: { count: jest.fn() },
     $transaction: jest.fn(),
@@ -52,9 +67,15 @@ describe('AdminService', () => {
   describe('updateShopStatus', () => {
     it('should approve shop', async () => {
       prisma.shop.findUnique.mockResolvedValue(mockShop);
-      prisma.shop.update.mockResolvedValue({ ...mockShop, status: ShopStatus.APPROVED });
+      prisma.shop.update.mockResolvedValue({
+        ...mockShop,
+        status: ShopStatus.APPROVED,
+      });
 
-      const result = await service.updateShopStatus('shop-1', ShopStatus.APPROVED);
+      const result = await service.updateShopStatus(
+        'shop-1',
+        ShopStatus.APPROVED,
+      );
       expect(result.status).toBe(ShopStatus.APPROVED);
       expect(prisma.shop.update).toHaveBeenCalledWith({
         where: { id: 'shop-1' },
@@ -63,16 +84,27 @@ describe('AdminService', () => {
     });
 
     it('should suspend shop', async () => {
-      prisma.shop.findUnique.mockResolvedValue({ ...mockShop, status: ShopStatus.APPROVED });
-      prisma.shop.update.mockResolvedValue({ ...mockShop, status: ShopStatus.SUSPENDED });
+      prisma.shop.findUnique.mockResolvedValue({
+        ...mockShop,
+        status: ShopStatus.APPROVED,
+      });
+      prisma.shop.update.mockResolvedValue({
+        ...mockShop,
+        status: ShopStatus.SUSPENDED,
+      });
 
-      const result = await service.updateShopStatus('shop-1', ShopStatus.SUSPENDED);
+      const result = await service.updateShopStatus(
+        'shop-1',
+        ShopStatus.SUSPENDED,
+      );
       expect(result.status).toBe(ShopStatus.SUSPENDED);
     });
 
     it('should throw NotFoundException when shop not found', async () => {
       prisma.shop.findUnique.mockResolvedValue(null);
-      await expect(service.updateShopStatus('no-shop', ShopStatus.APPROVED)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateShopStatus('no-shop', ShopStatus.APPROVED),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -94,7 +126,9 @@ describe('AdminService', () => {
     });
 
     it('should throw BadRequestException for invalid status', async () => {
-      await expect(service.listShops({ status: 'INVALID_STATUS' })).rejects.toThrow(BadRequestException);
+      await expect(
+        service.listShops({ status: 'INVALID_STATUS' }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -111,7 +145,10 @@ describe('AdminService', () => {
     });
 
     it('should activate user', async () => {
-      prisma.user.findUnique.mockResolvedValue({ ...mockUser, isActive: false });
+      prisma.user.findUnique.mockResolvedValue({
+        ...mockUser,
+        isActive: false,
+      });
       prisma.user.update.mockResolvedValue({ ...mockUser, isActive: true });
 
       const result = await service.toggleUserActive('user-1', true);
@@ -120,7 +157,9 @@ describe('AdminService', () => {
 
     it('should throw NotFoundException when user not found', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      await expect(service.toggleUserActive('no-user', false)).rejects.toThrow(NotFoundException);
+      await expect(service.toggleUserActive('no-user', false)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -131,15 +170,23 @@ describe('AdminService', () => {
 
     it('should archive product', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
-      prisma.product.update.mockResolvedValue({ ...mockProduct, status: ProductStatus.ARCHIVED });
+      prisma.product.update.mockResolvedValue({
+        ...mockProduct,
+        status: ProductStatus.ARCHIVED,
+      });
 
-      const result = await service.updateProductStatus('product-1', ProductStatus.ARCHIVED);
+      const result = await service.updateProductStatus(
+        'product-1',
+        ProductStatus.ARCHIVED,
+      );
       expect(result.status).toBe(ProductStatus.ARCHIVED);
     });
 
     it('should throw NotFoundException when product not found', async () => {
       prisma.product.findUnique.mockResolvedValue(null);
-      await expect(service.updateProductStatus('no-product', ProductStatus.ARCHIVED)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateProductStatus('no-product', ProductStatus.ARCHIVED),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -163,7 +210,11 @@ describe('AdminService', () => {
   // ─── listProducts ─────────────────────────────────────────────────────────
 
   describe('listProducts', () => {
-    const mockProduct = { id: 'product-1', name: 'Camera', status: 'AVAILABLE' };
+    const mockProduct = {
+      id: 'product-1',
+      name: 'Camera',
+      status: 'AVAILABLE',
+    };
 
     it('should return paginated products', async () => {
       prisma.$transaction.mockResolvedValue([[mockProduct], 1]);
@@ -178,7 +229,9 @@ describe('AdminService', () => {
     });
 
     it('should throw BadRequestException for invalid product status', async () => {
-      await expect(service.listProducts({ status: 'INVALID' })).rejects.toThrow(BadRequestException);
+      await expect(service.listProducts({ status: 'INVALID' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -200,7 +253,9 @@ describe('AdminService', () => {
     });
 
     it('should throw BadRequestException for invalid rental status', async () => {
-      await expect(service.listRentals({ status: 'INVALID' })).rejects.toThrow(BadRequestException);
+      await expect(service.listRentals({ status: 'INVALID' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

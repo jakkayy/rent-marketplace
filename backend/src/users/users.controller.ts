@@ -9,7 +9,12 @@ import {
   UseGuards,
   ForbiddenException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -76,7 +81,9 @@ export class UsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'ดูข้อมูล user ตาม ID (เฉพาะโปรไฟล์ตัวเองหรือ ADMIN)' })
+  @ApiOperation({
+    summary: 'ดูข้อมูล user ตาม ID (เฉพาะโปรไฟล์ตัวเองหรือ ADMIN)',
+  })
   @ApiResponse({ status: 200, description: 'ข้อมูล user' })
   @ApiResponse({ status: 403, description: 'ไม่มีสิทธิ์ดูข้อมูล user คนอื่น' })
   @ApiResponse({ status: 404, description: 'ไม่พบ user' })

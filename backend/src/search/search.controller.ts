@@ -19,7 +19,9 @@ export class SearchController {
   ) {}
 
   @Post('reindex')
-  @ApiOperation({ summary: 'ซิงค์สินค้าทั้งหมดไปยัง Meilisearch ใหม่ (เฉพาะ ADMIN)' })
+  @ApiOperation({
+    summary: 'ซิงค์สินค้าทั้งหมดไปยัง Meilisearch ใหม่ (เฉพาะ ADMIN)',
+  })
   async reindex() {
     const products = await this.prisma.product.findMany({
       include: { shop: true },

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { User, UserRole } from '@prisma/client';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -31,7 +35,10 @@ export class UsersService {
     return this.prisma.user.create({ data });
   }
 
-  async updateProfile(id: string, dto: UpdateProfileDto): Promise<Omit<User, 'password'>> {
+  async updateProfile(
+    id: string,
+    dto: UpdateProfileDto,
+  ): Promise<Omit<User, 'password'>> {
     const user = await this.prisma.user.update({
       where: { id },
       data: dto,
@@ -65,7 +72,9 @@ export class UsersService {
   }
 
   async addFavorite(userId: string, productId: string) {
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
     if (!product) throw new NotFoundException('Product not found');
 
     const existing = await this.prisma.favorite.findUnique({

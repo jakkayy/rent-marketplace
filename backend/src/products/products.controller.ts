@@ -9,7 +9,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -25,19 +31,42 @@ export class ProductsController {
 
   @Get()
   @ApiOperation({ summary: 'ดูรายการสินค้าทั้งหมด พร้อมกรองและค้นหา' })
-  @ApiQuery({ name: 'categoryId', required: false, description: 'กรองตามหมวดหมู่' })
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    description: 'กรองตามหมวดหมู่',
+  })
   @ApiQuery({ name: 'shopId', required: false, description: 'กรองตามร้าน' })
   @ApiQuery({ name: 'q', required: false, description: 'ค้นหาแบบ full-text' })
   @ApiQuery({ name: 'brand', required: false, description: 'กรองตามแบรนด์' })
   @ApiQuery({ name: 'size', required: false, description: 'กรองตามไซส์' })
   @ApiQuery({ name: 'color', required: false, description: 'กรองตามสี' })
-  @ApiQuery({ name: 'occasion', required: false, description: 'กรองตามโอกาส เช่น งานแต่งงาน' })
-  @ApiQuery({ name: 'priceMin', required: false, description: 'ราคาต่อวันขั้นต่ำ' })
-  @ApiQuery({ name: 'priceMax', required: false, description: 'ราคาต่อวันสูงสุด' })
-  @ApiQuery({ name: 'sort', required: false, enum: ['priceAsc', 'priceDesc', 'popular', 'newest'] })
+  @ApiQuery({
+    name: 'occasion',
+    required: false,
+    description: 'กรองตามโอกาส เช่น งานแต่งงาน',
+  })
+  @ApiQuery({
+    name: 'priceMin',
+    required: false,
+    description: 'ราคาต่อวันขั้นต่ำ',
+  })
+  @ApiQuery({
+    name: 'priceMax',
+    required: false,
+    description: 'ราคาต่อวันสูงสุด',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    enum: ['priceAsc', 'priceDesc', 'popular', 'newest'],
+  })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 20 })
-  @ApiResponse({ status: 200, description: '{ data, total, page, limit, totalPages }' })
+  @ApiResponse({
+    status: 200,
+    description: '{ data, total, page, limit, totalPages }',
+  })
   async findAll(
     @Query('categoryId') categoryId?: string,
     @Query('shopId') shopId?: string,
@@ -70,7 +99,10 @@ export class ProductsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'ดูข้อมูลสินค้าตาม ID (รวมข้อมูลร้านและรีวิว)' })
-  @ApiResponse({ status: 200, description: 'ข้อมูลสินค้า พร้อม shop info, reviews' })
+  @ApiResponse({
+    status: 200,
+    description: 'ข้อมูลสินค้า พร้อม shop info, reviews',
+  })
   @ApiResponse({ status: 404, description: 'ไม่พบสินค้า' })
   async findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
@@ -78,7 +110,11 @@ export class ProductsController {
 
   @Get(':id/availability')
   @ApiOperation({ summary: 'ดูตารางวันว่างของสินค้า' })
-  @ApiQuery({ name: 'month', required: false, description: 'รูปแบบ YYYY-MM เช่น 2026-06' })
+  @ApiQuery({
+    name: 'month',
+    required: false,
+    description: 'รูปแบบ YYYY-MM เช่น 2026-06',
+  })
   @ApiResponse({ status: 200, description: 'รายการวันที่พร้อม isBooked flag' })
   @ApiResponse({ status: 404, description: 'ไม่พบสินค้า' })
   async getAvailability(
@@ -90,8 +126,15 @@ export class ProductsController {
 
   @Post(':id/contact')
   @ApiOperation({ summary: 'บันทึกการกดติดต่อ LINE และรับ lineId ของร้าน' })
-  @ApiQuery({ name: 'source', required: false, description: 'แหล่งที่มา เช่น product_detail, search' })
-  @ApiResponse({ status: 201, description: '{ lineId } — นำไปสร้าง line://ti/p/<lineId>' })
+  @ApiQuery({
+    name: 'source',
+    required: false,
+    description: 'แหล่งที่มา เช่น product_detail, search',
+  })
+  @ApiResponse({
+    status: 201,
+    description: '{ lineId } — นำไปสร้าง line://ti/p/<lineId>',
+  })
   @ApiResponse({ status: 404, description: 'ไม่พบสินค้า' })
   @UseGuards(OptionalJwtAuthGuard)
   async trackContact(
@@ -117,7 +160,9 @@ export class ProductsController {
   }
 
   @Post(':id/availability')
-  @ApiOperation({ summary: 'ตั้งค่าวันว่างของสินค้า (เฉพาะ SELLER เจ้าของสินค้า)' })
+  @ApiOperation({
+    summary: 'ตั้งค่าวันว่างของสินค้า (เฉพาะ SELLER เจ้าของสินค้า)',
+  })
   @ApiResponse({ status: 201, description: 'บันทึกวันว่างสำเร็จ' })
   @ApiResponse({ status: 403, description: 'ไม่ใช่เจ้าของสินค้า' })
   @ApiBearerAuth()

@@ -70,23 +70,37 @@ export class ProductsService {
   }
 
   async findAll(query: FindAllQuery = {}) {
-    const { page = 1, limit = 20, sort, priceMin, priceMax, ...filters } = query;
+    const {
+      page = 1,
+      limit = 20,
+      sort,
+      priceMin,
+      priceMax,
+      ...filters
+    } = query;
     const skip = (page - 1) * limit;
 
     // ── Meilisearch path (when available and search keyword is provided) ──
     if (this.search.isAvailable() && filters.search) {
       const meiliFilter: string[] = ['status = AVAILABLE'];
-      if (filters.categoryId) meiliFilter.push(`categoryId = "${filters.categoryId}"`);
+      if (filters.categoryId)
+        meiliFilter.push(`categoryId = "${filters.categoryId}"`);
       if (filters.shopId) meiliFilter.push(`shopId = "${filters.shopId}"`);
-      if (filters.occasion) meiliFilter.push(`occasion = "${filters.occasion}"`);
+      if (filters.occasion)
+        meiliFilter.push(`occasion = "${filters.occasion}"`);
       if (filters.color) meiliFilter.push(`color = "${filters.color}"`);
       if (filters.size) meiliFilter.push(`size = "${filters.size}"`);
-      if (priceMin !== undefined) meiliFilter.push(`pricePerDay >= ${priceMin}`);
-      if (priceMax !== undefined) meiliFilter.push(`pricePerDay <= ${priceMax}`);
+      if (priceMin !== undefined)
+        meiliFilter.push(`pricePerDay >= ${priceMin}`);
+      if (priceMax !== undefined)
+        meiliFilter.push(`pricePerDay <= ${priceMax}`);
 
-      const meiliSort = sort === 'priceAsc' ? ['pricePerDay:asc']
-        : sort === 'priceDesc' ? ['pricePerDay:desc']
-        : undefined;
+      const meiliSort =
+        sort === 'priceAsc'
+          ? ['pricePerDay:asc']
+          : sort === 'priceDesc'
+            ? ['pricePerDay:desc']
+            : undefined;
 
       const { ids, total } = await this.search.search(filters.search, {
         filter: meiliFilter,
@@ -95,7 +109,14 @@ export class ProductsService {
         offset: skip,
       });
 
-      if (ids.length === 0) return { data: [], total, page, limit, totalPages: Math.ceil(total / limit) };
+      if (ids.length === 0)
+        return {
+          data: [],
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        };
 
       const data = await this.prisma.product.findMany({
         where: { id: { in: ids } },
@@ -107,8 +128,16 @@ export class ProductsService {
       });
 
       // preserve Meilisearch relevance order
-      const ordered = ids.map((id: string) => data.find((p) => p.id === id)).filter(Boolean);
-      return { data: ordered, total, page, limit, totalPages: Math.ceil(total / limit) };
+      const ordered = ids
+        .map((id: string) => data.find((p) => p.id === id))
+        .filter(Boolean);
+      return {
+        data: ordered,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     }
 
     // ── Database fallback path ──
@@ -119,7 +148,11 @@ export class ProductsService {
     if (filters.size) where.size = filters.size;
     if (filters.color) where.color = filters.color;
     if (filters.occasion) where.occasion = filters.occasion;
-    if (filters.search) where.name = { contains: filters.search, mode: Prisma.QueryMode.insensitive };
+    if (filters.search)
+      where.name = {
+        contains: filters.search,
+        mode: Prisma.QueryMode.insensitive,
+      };
     if (priceMin !== undefined || priceMax !== undefined) {
       where.pricePerDay = {
         ...(priceMin !== undefined && { gte: priceMin }),
@@ -179,7 +212,9 @@ export class ProductsService {
         },
         reviews: {
           include: {
-            author: { select: { firstName: true, lastName: true, avatar: true } },
+            author: {
+              select: { firstName: true, lastName: true, avatar: true },
+            },
           },
           orderBy: { createdAt: 'desc' },
         },
@@ -196,11 +231,11 @@ export class ProductsService {
     });
     if (!product) throw new NotFoundException('Product not found');
 
-    const where: any = { productId };
+    const where: Record<string, unknown> = { productId };
     if (month) {
       const start = new Date(`${month}-01`);
       const end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
-      where.date = { gte: start, lt: end };
+      where['date'] = { gte: start, lt: end };
     }
 
     return this.prisma.availability.findMany({
@@ -209,7 +244,11 @@ export class ProductsService {
     });
   }
 
-  async setAvailability(userId: string, productId: string, dto: SetAvailabilityDto[]) {
+  async setAvailability(
+    userId: string,
+    productId: string,
+    dto: SetAvailabilityDto[],
+  ) {
     await this.verifyProductOwner(productId, userId);
 
     const dates = dto.map((d) => new Date(d.date));
@@ -250,12 +289,15 @@ export class ProductsService {
   async remove(userId: string, productId: string) {
     await this.verifyProductOwner(productId, userId);
 
-    const product = await this.prisma.product.delete({ where: { id: productId } });
+    const product = await this.prisma.product.delete({
+      where: { id: productId },
+    });
     await this.search.delete(productId);
     return product;
   }
 
-  private toDocument(product: any): ProductDocument {
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+  private toDocument(product: Record<string, any>): ProductDocument {
     return {
       id: product.id,
       name: product.name,
@@ -272,8 +314,13 @@ export class ProductsService {
       status: product.status,
     };
   }
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 
-  async trackContact(productId: string, userId: string | null, source?: string) {
+  async trackContact(
+    productId: string,
+    userId: string | null,
+    source?: string,
+  ) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: { shopId: true, shop: { select: { lineId: true } } },

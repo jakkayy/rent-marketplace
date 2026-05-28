@@ -37,13 +37,28 @@ export class SearchService implements OnModuleInit {
     try {
       await this.client.health();
       const index = this.client.index(INDEX);
-      await index.updateSearchableAttributes(['name', 'description', 'brand', 'tags', 'shopName']);
-      await index.updateFilterableAttributes(['categoryId', 'shopId', 'occasion', 'status', 'color', 'size']);
+      await index.updateSearchableAttributes([
+        'name',
+        'description',
+        'brand',
+        'tags',
+        'shopName',
+      ]);
+      await index.updateFilterableAttributes([
+        'categoryId',
+        'shopId',
+        'occasion',
+        'status',
+        'color',
+        'size',
+      ]);
       await index.updateSortableAttributes(['pricePerDay']);
       this.available = true;
       this.logger.log('Connected to Meilisearch');
     } catch {
-      this.logger.warn('Meilisearch unavailable — falling back to database search');
+      this.logger.warn(
+        'Meilisearch unavailable — falling back to database search',
+      );
     }
   }
 
@@ -67,18 +82,24 @@ export class SearchService implements OnModuleInit {
     this.logger.log(`Synced ${docs.length} products to Meilisearch`);
   }
 
-  async search(query: string, options: {
-    filter?: string[];
-    sort?: string[];
-    limit?: number;
-    offset?: number;
-  } = {}) {
+  async search(
+    query: string,
+    options: {
+      filter?: string[];
+      sort?: string[];
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) {
     const result = await this.client.index(INDEX).search(query, {
       filter: options.filter,
       sort: options.sort,
       limit: options.limit ?? 20,
       offset: options.offset ?? 0,
     });
-    return { ids: result.hits.map((h) => h.id as string), total: result.estimatedTotalHits ?? 0 };
+    return {
+      ids: result.hits.map((h) => h.id as string),
+      total: result.estimatedTotalHits ?? 0,
+    };
   }
 }

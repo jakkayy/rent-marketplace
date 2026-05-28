@@ -9,12 +9,19 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { ShopsService } from './shops.service';
 import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserRole } from '@prisma/client';
 
 @ApiTags('Shops')
 @Controller('shops')
@@ -23,11 +30,18 @@ export class ShopsController {
 
   @Get()
   @ApiOperation({ summary: 'ดูรายการร้านทั้งหมด พร้อมกรองและแบ่งหน้า' })
-  @ApiQuery({ name: 'district', required: false, description: 'กรองตามเขต/อำเภอ' })
+  @ApiQuery({
+    name: 'district',
+    required: false,
+    description: 'กรองตามเขต/อำเภอ',
+  })
   @ApiQuery({ name: 'q', required: false, description: 'ค้นหาจากชื่อร้าน' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 20 })
-  @ApiResponse({ status: 200, description: '{ data, total, page, limit, totalPages }' })
+  @ApiResponse({
+    status: 200,
+    description: '{ data, total, page, limit, totalPages }',
+  })
   async findAll(
     @Query('district') district?: string,
     @Query('q') search?: string,
@@ -50,7 +64,7 @@ export class ShopsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async findMyShop(
-    @CurrentUser() user: { userId: string; email: string; role: string },
+    @CurrentUser() user: { userId: string; email: string; role: UserRole },
   ) {
     return this.shopsService.findMyShop(user.userId);
   }
@@ -71,10 +85,10 @@ export class ShopsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async create(
-    @CurrentUser() user: { userId: string; email: string; role: string },
+    @CurrentUser() user: { userId: string; email: string; role: UserRole },
     @Body() dto: CreateShopDto,
   ) {
-    return this.shopsService.create(user.userId, user.role as any, dto);
+    return this.shopsService.create(user.userId, user.role, dto);
   }
 
   @Patch('my')
@@ -85,7 +99,7 @@ export class ShopsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async update(
-    @CurrentUser() user: { userId: string; email: string; role: string },
+    @CurrentUser() user: { userId: string; email: string; role: UserRole },
     @Body() dto: UpdateShopDto,
   ) {
     return this.shopsService.update(user.userId, dto);
@@ -98,7 +112,7 @@ export class ShopsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async remove(
-    @CurrentUser() user: { userId: string; email: string; role: string },
+    @CurrentUser() user: { userId: string; email: string; role: UserRole },
   ) {
     return this.shopsService.remove(user.userId);
   }

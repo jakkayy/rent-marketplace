@@ -89,13 +89,17 @@ describe('ProductsService', () => {
       const result = await service.create('seller-1', dto);
       expect(result.name).toBe('Test Camera');
       expect(prisma.product.create).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ shopId: 'shop-1' }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ shopId: 'shop-1' }),
+        }),
       );
     });
 
     it('should throw ForbiddenException when seller has no shop', async () => {
       prisma.shop.findUnique.mockResolvedValue(null);
-      await expect(service.create('seller-1', dto)).rejects.toThrow(ForbiddenException);
+      await expect(service.create('seller-1', dto)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -170,27 +174,38 @@ describe('ProductsService', () => {
 
       await service.getAvailability('product-1', '2026-06');
       expect(prisma.availability.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: expect.objectContaining({ date: expect.any(Object) }) }),
+        expect.objectContaining({
+          where: expect.objectContaining({ date: expect.any(Object) }),
+        }),
       );
     });
 
     it('should throw NotFoundException when product not found', async () => {
       prisma.product.findUnique.mockResolvedValue(null);
-      await expect(service.getAvailability('no-product')).rejects.toThrow(NotFoundException);
+      await expect(service.getAvailability('no-product')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   // ─── setAvailability ──────────────────────────────────────────────────────
 
   describe('setAvailability', () => {
-    const dto = [{ date: '2026-06-01', isBooked: true }, { date: '2026-06-02', isBooked: false }];
+    const dto = [
+      { date: '2026-06-01', isBooked: true },
+      { date: '2026-06-02', isBooked: false },
+    ];
 
     it('should set availability when owner', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
       prisma.availability.deleteMany.mockResolvedValue({ count: 0 });
       prisma.availability.createMany.mockResolvedValue({ count: 2 });
 
-      const result = await service.setAvailability('seller-1', 'product-1', dto);
+      const result = await service.setAvailability(
+        'seller-1',
+        'product-1',
+        dto,
+      );
       expect(prisma.availability.deleteMany).toHaveBeenCalled();
       expect(prisma.availability.createMany).toHaveBeenCalled();
       expect(result.count).toBe(2);
@@ -198,20 +213,29 @@ describe('ProductsService', () => {
 
     it('should throw ForbiddenException when not product owner', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
-      await expect(service.setAvailability('other-seller', 'product-1', dto)).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.setAvailability('other-seller', 'product-1', dto),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
   // ─── trackContact ─────────────────────────────────────────────────────────
 
   describe('trackContact', () => {
-    const mockProductWithShop = { shopId: 'shop-1', shop: { lineId: '@camerahub' } };
+    const mockProductWithShop = {
+      shopId: 'shop-1',
+      shop: { lineId: '@camerahub' },
+    };
 
     it('should track contact and return lineId', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProductWithShop);
       prisma.contactEvent.create.mockResolvedValue({});
 
-      const result = await service.trackContact('product-1', 'user-1', 'product_detail');
+      const result = await service.trackContact(
+        'product-1',
+        'user-1',
+        'product_detail',
+      );
       expect(result.lineId).toBe('@camerahub');
     });
 
@@ -225,7 +249,9 @@ describe('ProductsService', () => {
 
     it('should throw NotFoundException when product not found', async () => {
       prisma.product.findUnique.mockResolvedValue(null);
-      await expect(service.trackContact('no-product', null)).rejects.toThrow(NotFoundException);
+      await expect(service.trackContact('no-product', null)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -233,14 +259,19 @@ describe('ProductsService', () => {
 
   describe('findOne', () => {
     it('should return product with shop and reviews', async () => {
-      prisma.product.findUnique.mockResolvedValue({ ...mockProduct, reviews: [] });
+      prisma.product.findUnique.mockResolvedValue({
+        ...mockProduct,
+        reviews: [],
+      });
       const result = await service.findOne('product-1');
       expect(result.id).toBe('product-1');
     });
 
     it('should throw NotFoundException when product not found', async () => {
       prisma.product.findUnique.mockResolvedValue(null);
-      await expect(service.findOne('not-exist')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('not-exist')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -249,20 +280,29 @@ describe('ProductsService', () => {
   describe('update', () => {
     it('should update product when owner', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
-      prisma.product.update.mockResolvedValue({ ...mockProduct, name: 'Updated' });
+      prisma.product.update.mockResolvedValue({
+        ...mockProduct,
+        name: 'Updated',
+      });
 
-      const result = await service.update('seller-1', 'product-1', { name: 'Updated' });
+      const result = await service.update('seller-1', 'product-1', {
+        name: 'Updated',
+      });
       expect(result.name).toBe('Updated');
     });
 
     it('should throw ForbiddenException when not product owner', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
-      await expect(service.update('other-seller', 'product-1', {})).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.update('other-seller', 'product-1', {}),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw NotFoundException when product not found', async () => {
       prisma.product.findUnique.mockResolvedValue(null);
-      await expect(service.update('seller-1', 'not-exist', {})).rejects.toThrow(NotFoundException);
+      await expect(service.update('seller-1', 'not-exist', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -274,13 +314,17 @@ describe('ProductsService', () => {
       prisma.product.delete.mockResolvedValue(mockProduct);
 
       const result = await service.remove('seller-1', 'product-1');
-      expect(prisma.product.delete).toHaveBeenCalledWith({ where: { id: 'product-1' } });
+      expect(prisma.product.delete).toHaveBeenCalledWith({
+        where: { id: 'product-1' },
+      });
       expect(result.id).toBe('product-1');
     });
 
     it('should throw ForbiddenException when not product owner', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
-      await expect(service.remove('other-seller', 'product-1')).rejects.toThrow(ForbiddenException);
+      await expect(service.remove('other-seller', 'product-1')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 });

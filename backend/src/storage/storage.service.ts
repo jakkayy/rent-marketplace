@@ -20,7 +20,10 @@ export class StorageService implements OnModuleInit {
 
   constructor(private config: ConfigService) {
     this.bucket = this.config.get('MINIO_BUCKET', 'marketplace');
-    this.publicUrl = this.config.get('MINIO_PUBLIC_URL', 'http://localhost:9000');
+    this.publicUrl = this.config.get(
+      'MINIO_PUBLIC_URL',
+      'http://localhost:9000',
+    );
 
     this.s3 = new S3Client({
       endpoint: this.config.get('MINIO_ENDPOINT', 'http://localhost:9000'),
@@ -59,7 +62,9 @@ export class StorageService implements OnModuleInit {
             }),
           }),
         );
-        this.logger.log(`Bucket "${this.bucket}" created with public read policy`);
+        this.logger.log(
+          `Bucket "${this.bucket}" created with public read policy`,
+        );
       } catch (err) {
         this.logger.error('Failed to create bucket', err);
       }
@@ -85,6 +90,8 @@ export class StorageService implements OnModuleInit {
     const key = url.split(`/${this.bucket}/`)[1];
     if (!key) return;
 
-    await this.s3.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+    await this.s3.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
   }
 }

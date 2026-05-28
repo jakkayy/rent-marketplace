@@ -55,10 +55,17 @@ describe('AuthService', () => {
     },
   };
 
-  const mockJwtService = { signAsync: jest.fn().mockResolvedValue('mock-token') };
+  const mockJwtService = {
+    signAsync: jest.fn().mockResolvedValue('mock-token'),
+  };
   const mockConfigService = { get: jest.fn().mockReturnValue('test-secret') };
-  const mockTokenBlacklist = { revoke: jest.fn().mockResolvedValue(undefined), isRevoked: jest.fn().mockResolvedValue(false) };
-  const mockMailService = { sendPasswordReset: jest.fn().mockResolvedValue(undefined) };
+  const mockTokenBlacklist = {
+    revoke: jest.fn().mockResolvedValue(undefined),
+    isRevoked: jest.fn().mockResolvedValue(false),
+  };
+  const mockMailService = {
+    sendPasswordReset: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -113,7 +120,10 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      const result = await service.login({ email: mockUser.email, password: 'password123' });
+      const result = await service.login({
+        email: mockUser.email,
+        password: 'password123',
+      });
       expect(result.accessToken).toBe('mock-token');
       expect(result.user.email).toBe(mockUser.email);
       expect(result.user).not.toHaveProperty('password');
@@ -121,17 +131,17 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException when email not found', async () => {
       usersService.findByEmail.mockResolvedValue(null);
-      await expect(service.login({ email: 'no@example.com', password: '123' })).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        service.login({ email: 'no@example.com', password: '123' }),
+      ).rejects.toThrow(UnauthorizedException);
     });
 
     it('should throw UnauthorizedException when password is wrong', async () => {
       usersService.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-      await expect(service.login({ email: mockUser.email, password: 'wrong' })).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        service.login({ email: mockUser.email, password: 'wrong' }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
@@ -139,8 +149,14 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should revoke token and return success message', async () => {
-      const result = await service.logout('jti-123', Math.floor(Date.now() / 1000) + 3600);
-      expect(tokenBlacklist.revoke).toHaveBeenCalledWith('jti-123', expect.any(Number));
+      const result = await service.logout(
+        'jti-123',
+        Math.floor(Date.now() / 1000) + 3600,
+      );
+      expect(tokenBlacklist.revoke).toHaveBeenCalledWith(
+        'jti-123',
+        expect.any(Number),
+      );
       expect(result.message).toBe('Logged out successfully');
     });
   });
@@ -181,16 +197,22 @@ describe('AuthService', () => {
       prisma.passwordResetToken.update.mockResolvedValue({});
       usersService.update.mockResolvedValue({});
 
-      const result = await service.resetPassword({ token: 'plain-token', password: 'newpassword123' });
+      const result = await service.resetPassword({
+        token: 'plain-token',
+        password: 'newpassword123',
+      });
       expect(result.message).toBe('Password reset successfully');
-      expect(usersService.update).toHaveBeenCalledWith('user-1', expect.objectContaining({ password: expect.any(String) }));
+      expect(usersService.update).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({ password: expect.any(String) }),
+      );
     });
 
     it('should throw BadRequestException when token not found', async () => {
       prisma.passwordResetToken.findUnique.mockResolvedValue(null);
-      await expect(service.resetPassword({ token: 'bad-token', password: 'newpass123' })).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.resetPassword({ token: 'bad-token', password: 'newpass123' }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException when token already used', async () => {
@@ -200,9 +222,9 @@ describe('AuthService', () => {
         used: true,
         expiresAt: new Date(Date.now() + 3600_000),
       });
-      await expect(service.resetPassword({ token: 'used-token', password: 'newpass123' })).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.resetPassword({ token: 'used-token', password: 'newpass123' }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException when token is expired', async () => {
@@ -212,9 +234,12 @@ describe('AuthService', () => {
         used: false,
         expiresAt: new Date(Date.now() - 1000),
       });
-      await expect(service.resetPassword({ token: 'expired-token', password: 'newpass123' })).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.resetPassword({
+          token: 'expired-token',
+          password: 'newpass123',
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

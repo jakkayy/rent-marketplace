@@ -23,7 +23,8 @@ export class RentalsService {
 
     const start = new Date(dto.startDate);
     const end = new Date(dto.endDate);
-    if (start >= end) throw new BadRequestException('End date must be after start date');
+    if (start >= end)
+      throw new BadRequestException('End date must be after start date');
 
     const totalDays =
       Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
@@ -36,9 +37,14 @@ export class RentalsService {
 
     // Check availability before transaction (NestJS exceptions must not be thrown inside $transaction)
     const blocked = await this.prisma.availability.findMany({
-      where: { productId: dto.productId, date: { gte: start, lte: end }, isBooked: true },
+      where: {
+        productId: dto.productId,
+        date: { gte: start, lte: end },
+        isBooked: true,
+      },
     });
-    if (blocked.length > 0) throw new ConflictException('Some dates are already booked');
+    if (blocked.length > 0)
+      throw new ConflictException('Some dates are already booked');
 
     // Transaction handles only the writes to prevent partial state
     return this.prisma.$transaction(async (tx) => {
@@ -57,7 +63,11 @@ export class RentalsService {
       });
 
       await tx.availability.createMany({
-        data: dates.map((date) => ({ productId: dto.productId, date, isBooked: true })),
+        data: dates.map((date) => ({
+          productId: dto.productId,
+          date,
+          isBooked: true,
+        })),
         skipDuplicates: true,
       });
 
@@ -65,7 +75,10 @@ export class RentalsService {
     });
   }
 
-  async findMyRentals(renterId: string, query: { page?: number; limit?: number } = {}) {
+  async findMyRentals(
+    renterId: string,
+    query: { page?: number; limit?: number } = {},
+  ) {
     const { page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
@@ -87,11 +100,16 @@ export class RentalsService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async findShopRentals(userId: string, query: { page?: number; limit?: number } = {}) {
+  async findShopRentals(
+    userId: string,
+    query: { page?: number; limit?: number } = {},
+  ) {
     const { page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
-    const shop = await this.prisma.shop.findUnique({ where: { ownerId: userId } });
+    const shop = await this.prisma.shop.findUnique({
+      where: { ownerId: userId },
+    });
     if (!shop) throw new ForbiddenException('You do not have a shop');
 
     const where = { shopId: shop.id };
@@ -100,7 +118,9 @@ export class RentalsService {
         where,
         include: {
           product: { select: { id: true, name: true, images: true } },
-          renter: { select: { id: true, firstName: true, lastName: true, phone: true } },
+          renter: {
+            select: { id: true, firstName: true, lastName: true, phone: true },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -112,8 +132,14 @@ export class RentalsService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async updateStatus(userId: string, rentalId: string, dto: UpdateRentalStatusDto) {
-    const shop = await this.prisma.shop.findUnique({ where: { ownerId: userId } });
+  async updateStatus(
+    userId: string,
+    rentalId: string,
+    dto: UpdateRentalStatusDto,
+  ) {
+    const shop = await this.prisma.shop.findUnique({
+      where: { ownerId: userId },
+    });
     if (!shop) throw new ForbiddenException('You do not have a shop');
 
     const rental = await this.prisma.rental.findFirst({
@@ -148,16 +174,26 @@ export class RentalsService {
       [RentalStatus.ACTIVE]: [RentalStatus.COMPLETED],
     };
     if (!allowed[from]?.includes(to)) {
-      throw new BadRequestException(`Cannot transition rental from ${from} to ${to}`);
+      throw new BadRequestException(
+        `Cannot transition rental from ${from} to ${to}`,
+      );
     }
   }
 
   async cancelRental(userId: string, rentalId: string) {
-    const rental = await this.prisma.rental.findUnique({ where: { id: rentalId } });
+    const rental = await this.prisma.rental.findUnique({
+      where: { id: rentalId },
+    });
     if (!rental) throw new NotFoundException('Rental not found');
-    if (rental.renterId !== userId) throw new ForbiddenException('Not your rental');
-    if (rental.status === RentalStatus.COMPLETED || rental.status === RentalStatus.ACTIVE) {
-      throw new BadRequestException(`Cannot cancel a ${rental.status.toLowerCase()} rental`);
+    if (rental.renterId !== userId)
+      throw new ForbiddenException('Not your rental');
+    if (
+      rental.status === RentalStatus.COMPLETED ||
+      rental.status === RentalStatus.ACTIVE
+    ) {
+      throw new BadRequestException(
+        `Cannot cancel a ${rental.status.toLowerCase()} rental`,
+      );
     }
 
     const result = await this.prisma.rental.update({
@@ -166,7 +202,10 @@ export class RentalsService {
     });
 
     await this.prisma.availability.deleteMany({
-      where: { productId: rental.productId, date: { gte: rental.startDate, lte: rental.endDate } },
+      where: {
+        productId: rental.productId,
+        date: { gte: rental.startDate, lte: rental.endDate },
+      },
     });
 
     return result;

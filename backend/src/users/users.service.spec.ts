@@ -20,16 +20,31 @@ const mockUser = {
 };
 
 const mockProduct = { id: 'product-1', name: 'Camera' };
-const mockFavorite = { id: 'fav-1', userId: 'user-1', productId: 'product-1', createdAt: new Date() };
+const mockFavorite = {
+  id: 'fav-1',
+  userId: 'user-1',
+  productId: 'product-1',
+  createdAt: new Date(),
+};
 
 describe('UsersService', () => {
   let service: UsersService;
   let prisma: any;
 
   const mockPrisma = {
-    user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() },
+    user: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
     product: { findUnique: jest.fn() },
-    favorite: { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), delete: jest.fn() },
+    favorite: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      delete: jest.fn(),
+    },
   };
 
   beforeEach(async () => {
@@ -56,7 +71,9 @@ describe('UsersService', () => {
 
     it('should throw NotFoundException when user not found', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      await expect(service.findByIdOrThrow('no-user')).rejects.toThrow(NotFoundException);
+      await expect(service.findByIdOrThrow('no-user')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -64,15 +81,25 @@ describe('UsersService', () => {
 
   describe('updateProfile', () => {
     it('should update profile and not return password', async () => {
-      prisma.user.update.mockResolvedValue({ ...mockUser, firstName: 'Updated' });
-      const result = await service.updateProfile('user-1', { firstName: 'Updated' });
+      prisma.user.update.mockResolvedValue({
+        ...mockUser,
+        firstName: 'Updated',
+      });
+      const result = await service.updateProfile('user-1', {
+        firstName: 'Updated',
+      });
       expect(result.firstName).toBe('Updated');
       expect(result).not.toHaveProperty('password');
     });
 
     it('should update only provided fields', async () => {
-      prisma.user.update.mockResolvedValue({ ...mockUser, phone: '099-999-9999' });
-      const result = await service.updateProfile('user-1', { phone: '099-999-9999' });
+      prisma.user.update.mockResolvedValue({
+        ...mockUser,
+        phone: '099-999-9999',
+      });
+      const result = await service.updateProfile('user-1', {
+        phone: '099-999-9999',
+      });
       expect(result.phone).toBe('099-999-9999');
     });
   });
@@ -81,7 +108,9 @@ describe('UsersService', () => {
 
   describe('getFavorites', () => {
     it('should return list of favorites', async () => {
-      prisma.favorite.findMany.mockResolvedValue([{ ...mockFavorite, product: mockProduct }]);
+      prisma.favorite.findMany.mockResolvedValue([
+        { ...mockFavorite, product: mockProduct },
+      ]);
       const result = await service.getFavorites('user-1');
       expect(result).toHaveLength(1);
       expect(result[0].product.id).toBe('product-1');
@@ -108,13 +137,17 @@ describe('UsersService', () => {
 
     it('should throw NotFoundException when product not found', async () => {
       prisma.product.findUnique.mockResolvedValue(null);
-      await expect(service.addFavorite('user-1', 'no-product')).rejects.toThrow(NotFoundException);
+      await expect(service.addFavorite('user-1', 'no-product')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ConflictException when already in favorites', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
       prisma.favorite.findUnique.mockResolvedValue(mockFavorite);
-      await expect(service.addFavorite('user-1', 'product-1')).rejects.toThrow(ConflictException);
+      await expect(service.addFavorite('user-1', 'product-1')).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -132,7 +165,9 @@ describe('UsersService', () => {
 
     it('should throw NotFoundException when favorite not found', async () => {
       prisma.favorite.findUnique.mockResolvedValue(null);
-      await expect(service.removeFavorite('user-1', 'product-1')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.removeFavorite('user-1', 'product-1'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

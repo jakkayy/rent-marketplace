@@ -1,5 +1,9 @@
 import { Test } from '@nestjs/testing';
-import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ShopStatus, UserRole } from '@prisma/client';
 import { ShopsService } from './shops.service';
 import { PrismaService } from '../database/prisma.service';
@@ -56,21 +60,29 @@ describe('ShopsService', () => {
       const result = await service.create('seller-1', UserRole.SELLER, dto);
       expect(result.name).toBe('New Shop');
       expect(prisma.shop.create).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ ownerId: 'seller-1' }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ ownerId: 'seller-1' }),
+        }),
       );
     });
 
     it('should throw ForbiddenException when role is BUYER', async () => {
-      await expect(service.create('buyer-1', UserRole.BUYER, dto)).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.create('buyer-1', UserRole.BUYER, dto),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw ForbiddenException when role is ADMIN', async () => {
-      await expect(service.create('admin-1', UserRole.ADMIN, dto)).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.create('admin-1', UserRole.ADMIN, dto),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw ConflictException when seller already has a shop', async () => {
       prisma.shop.findUnique.mockResolvedValue(mockShop);
-      await expect(service.create('seller-1', UserRole.SELLER, dto)).rejects.toThrow(ConflictException);
+      await expect(
+        service.create('seller-1', UserRole.SELLER, dto),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
@@ -110,7 +122,9 @@ describe('ShopsService', () => {
 
     it('should throw NotFoundException when shop not found', async () => {
       prisma.shop.findUnique.mockResolvedValue(null);
-      await expect(service.findOne('no-shop')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('no-shop')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -118,14 +132,20 @@ describe('ShopsService', () => {
 
   describe('findMyShop', () => {
     it('should return sellers shop with products and rentals', async () => {
-      prisma.shop.findUnique.mockResolvedValue({ ...mockShop, products: [], rentals: [] });
+      prisma.shop.findUnique.mockResolvedValue({
+        ...mockShop,
+        products: [],
+        rentals: [],
+      });
       const result = await service.findMyShop('seller-1');
       expect(result.ownerId).toBe('seller-1');
     });
 
     it('should throw NotFoundException when seller has no shop', async () => {
       prisma.shop.findUnique.mockResolvedValue(null);
-      await expect(service.findMyShop('seller-1')).rejects.toThrow(NotFoundException);
+      await expect(service.findMyShop('seller-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -134,7 +154,10 @@ describe('ShopsService', () => {
   describe('update', () => {
     it('should update shop info', async () => {
       prisma.shop.findUnique.mockResolvedValue(mockShop);
-      prisma.shop.update.mockResolvedValue({ ...mockShop, name: 'Updated Shop' });
+      prisma.shop.update.mockResolvedValue({
+        ...mockShop,
+        name: 'Updated Shop',
+      });
 
       const result = await service.update('seller-1', { name: 'Updated Shop' });
       expect(result.name).toBe('Updated Shop');
@@ -142,7 +165,9 @@ describe('ShopsService', () => {
 
     it('should throw NotFoundException when shop not found', async () => {
       prisma.shop.findUnique.mockResolvedValue(null);
-      await expect(service.update('seller-1', { name: 'x' })).rejects.toThrow(NotFoundException);
+      await expect(service.update('seller-1', { name: 'x' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -154,12 +179,16 @@ describe('ShopsService', () => {
       prisma.shop.delete.mockResolvedValue(mockShop);
 
       await service.remove('seller-1');
-      expect(prisma.shop.delete).toHaveBeenCalledWith({ where: { id: 'shop-1' } });
+      expect(prisma.shop.delete).toHaveBeenCalledWith({
+        where: { id: 'shop-1' },
+      });
     });
 
     it('should throw NotFoundException when shop not found', async () => {
       prisma.shop.findUnique.mockResolvedValue(null);
-      await expect(service.remove('seller-1')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('seller-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

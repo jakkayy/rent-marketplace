@@ -7,15 +7,27 @@ import {
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiConsumes,
+} from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { StorageService } from '../storage/storage.service';
 
-const imageFilter = (_req: any, file: Express.Multer.File, cb: any) => {
+const imageFilter = (
+  _req: unknown,
+  file: Express.Multer.File,
+  cb: (error: Error | null, acceptFile: boolean) => void,
+) => {
   if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-    cb(new BadRequestException('Only jpg, png, and webp files are allowed'), false);
+    cb(
+      new BadRequestException('Only jpg, png, and webp files are allowed'),
+      false,
+    );
     return;
   }
   cb(null, true);
@@ -34,7 +46,9 @@ export class UploadController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post()
-  @ApiOperation({ summary: 'อัปโหลดรูปภาพ 1 รูป (jpg, png, webp — สูงสุด 5MB)' })
+  @ApiOperation({
+    summary: 'อัปโหลดรูปภาพ 1 รูป (jpg, png, webp — สูงสุด 5MB)',
+  })
   @ApiConsumes('multipart/form-data')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', multerOptions))
@@ -51,7 +65,9 @@ export class UploadController {
   @UseInterceptors(FilesInterceptor('files', 10, multerOptions))
   async uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
     if (!files?.length) throw new BadRequestException('No files provided');
-    const urls = await Promise.all(files.map((f) => this.storageService.upload(f)));
+    const urls = await Promise.all(
+      files.map((f) => this.storageService.upload(f)),
+    );
     return urls.map((url, i) => ({
       url,
       originalName: files[i].originalname,
