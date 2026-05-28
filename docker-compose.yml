@@ -67,6 +67,48 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build: ./backend
+    container_name: marketplace-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://marketplace:marketplace123@postgres:5432/marketplace
+      JWT_SECRET: "marketplace-secret-key-2026-change-in-production"
+      JWT_EXPIRES_IN: "1d"
+      PORT: 3001
+      FRONTEND_URL: http://localhost:3000
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: marketplace
+      MINIO_SECRET_KEY: marketplace123
+      MINIO_BUCKET: marketplace
+      MINIO_PUBLIC_URL: http://localhost:9000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MEILI_HOST: http://meilisearch:7700
+      MEILI_MASTER_KEY: marketplace_meili_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: marketplace-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
   minio_data:
