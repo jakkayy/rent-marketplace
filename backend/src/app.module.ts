@@ -15,6 +15,7 @@ import { StorageModule } from './storage/storage.module';
 import { SearchModule } from './search/search.module';
 import { AppController } from './app.controller';
 import { LoggingMiddleware } from './common/middleware/logging.middleware';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { LoggingMiddleware } from './common/middleware/logging.middleware';
         ttl: 60_000,
         limit: 100,
       },
-    ]),
+    ]), 
     DatabaseModule,
     UsersModule,
     AuthModule,
@@ -35,6 +36,7 @@ import { LoggingMiddleware } from './common/middleware/logging.middleware';
     CategoriesModule,
     UploadModule,
     AdminModule,
+    PrometheusModule.register(),
     StorageModule,
     SearchModule,
   ],
